@@ -285,8 +285,9 @@ for n=0L,nimage-1 do begin
 
    if keyword_set(display) then begin
       cubehelix
-      plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
+      plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)',title=images[n]
       tvimage,im,position=[.1,.1,.95,.95]
+
    endif
 
 ; find and phot
