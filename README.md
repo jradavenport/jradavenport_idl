@@ -22,9 +22,9 @@ This is a collection of routines that I have created to help make using IDL easi
 
 ## Binning and Smoothing
 - **supsmu.pro**:  SuperSmoother, a variable span smoothing algorithm
-- **pdm_sp.pro**:  Phase Dispersion Minizier using Splines
+- **pdm_sp.pro**:  Phase Dispersion Minimizer using Splines
 - **pdm_ss.pro**:  Phase Dispersion Minimizer using SuperSmoother
-- **softserve.pro**:  a variable span smoother for lightcurves
+- **softserve.pro**:  a variable span smoother for light curves
 - **medbin.pro**:  find median values in (x,y) bins
 - **todcor.pro**:  Two Dimensional Cross Correlation script
 
