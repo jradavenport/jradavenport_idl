@@ -29,6 +29,7 @@ This is a collection of routines that I have created to help make using IDL easi
 - **todcor.pro**:  Two Dimensional Cross Correlation script
 
 ## Helpful Things
+- **randomp.pro**:  generate random numbers from a powerlaw distribution
 - **geomean.pro**:  compute geometric mean for an array
 - **perror.pro**:  compute asymmetric Poisson error
 - **gerror.pro**:  compute symmetric Poisson error
