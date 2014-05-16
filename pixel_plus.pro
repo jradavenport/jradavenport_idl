@@ -48,15 +48,15 @@ PRO Reverse_CT,set=set
 ; This program reverses the current color table
 ; Compliments of D Fanning
 ; http://www.dfanning.com/color_tips/reverse_ct.html
-if keyword_set(set) then begin
-TVLCT, r, g, b, /Get
-TVLCT, Reverse(r), Reverse(g), Reverse(b)
-endif
-return
+  if keyword_set(set) then begin
+     TVLCT, r, g, b, /Get
+     TVLCT, Reverse(r), Reverse(g), Reverse(b)
+  endif
+  return
 END
 ;==================================================================
 
-pro pixel_plus,x,y,I,xbin=xbin,ybin=ybin,nlvl=nlvl,_extra = e,mode=mode,lvl=lvl,alpha=alpha,empty=empty,reverse=reverse,hist=hist,xx=xx,yy=yy,noplot=noplot
+pro pixel_plus,x,y,I,xbin=xbin,ybin=ybin,nlvl=nlvl,_extra = e,mode=mode,lvl=lvl,alpha=alpha,empty=empty,reverse=reverse,hist=hist,xx=xx,yy=yy,noplot=noplot,overplot=overplot
 
 ; Use the X/Yrange to set limits of the histogram
   ymin = min(y)                 ; 
@@ -98,6 +98,7 @@ if mode eq 'median' then $
 
 hist=alpha
 
+
 ;useful if the "I" values might = 0, reassign "empty" cells
 if not keyword_set(empty) then empty = 0
 tmp = where(im eq 0)
@@ -112,26 +113,36 @@ yy=findgen((ymax-ymin)/ybin+1.)*ybin+ymin;+ybin/2.
 
 ;----- plot ----
 if not keyword_set(noplot) then begin ; /NOPLOT
-;;plot,x,y,/nodata,_extra = e,/xstyle,/ystyle
-if not keyword_set(lvl) then lvl = [stddev(alpha,/nan)*(findgen(nlvl)/2.+1.)]
 
-; contour,alpha,xbin,ybin,/fill,_extra=e
+if not keyword_set(lvl) then $
+   lvl = [stddev(alpha,/nan)*(findgen(nlvl)/2.+1.)]
 
 
 if keyword_set(reverse) then begin
-   if not keyword_set(overplot) then plot,xx,yy,/nodata,_extra = e
+   if not keyword_set(overplot) then begin
+      plot,xx,yy,/nodata,_extra = e
+      reverse_ct,/set
+      pixel_contour,alpha,xx,yy,lvl,_extra = e,thresh=lvl[0],/overplot
+      reverse_ct,/set
+    endif
 
-   reverse_ct,/set
-   pixel_contour,alpha,xx,yy,lvl,_extra = e,thresh=lvl[0],/overplot
-   reverse_ct,/set
+   if keyword_set(overplot) then begin
+      reverse_ct,/set
+      pixel_contour,alpha,xx,yy,lvl,_extra = e,thresh=lvl[0],/overplot
+      reverse_ct,/set
+   endif
+
 endif
 
-if not keyword_set(reverse) then $
-   if not keyword_set(overplot) then pixel_contour,alpha,xx,yy,lvl,_extra = e,thresh=lvl[0]
+if not keyword_set(reverse) then begin
+   if not keyword_set(overplot) then $
+      pixel_contour,alpha,xx,yy,lvl,_extra = e,thresh=lvl[0]
 
-if not keyword_set(reverse) then $
-   if keyword_set(overplot) then pixel_contour,alpha,xx,yy,lvl,_extra = e,thresh=lvl[0],/overplot
-endif ; /NOPLOT
+   if keyword_set(overplot) then $
+      pixel_contour,alpha,xx,yy,lvl,_extra = e,thresh=lvl[0],/overplot
+endif
+
+ENDIF 
 
 return
 end
