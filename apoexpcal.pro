@@ -1,7 +1,7 @@
 ;---------------
 ;
-;  Exposure Time Calculator for APO
-;  (NOTE: using very simple assumptions! Buyer Beware!!)
+;  Simple Exposure Time Calculator for Apache Point Observatory (APO) 3.5m telescope
+;  NOTE: using very approximate values! Do not plan your observing run solely on this tool!
 ;
 pro apoexpcal,inst,mag,s2n,filter
 
