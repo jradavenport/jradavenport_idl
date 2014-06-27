@@ -1,6 +1,7 @@
 ;---------------
 ;
 ;  Exposure Time Calculator for APO
+;  (NOTE: using very simple assumptions! Buyer Beware!!)
 ;
 pro apoexpcal,inst,mag,s2n,filter
 
