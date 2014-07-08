@@ -115,7 +115,7 @@ pro cubehelix,start=start,rot=rot,hue=hue,gamma=gamma,$
   if n_elements(hue) eq 0 then hue = 1.2
   if n_elements(sat) eq 0 then hue = 1.2 ; override HUE w/ SAT
 
-  if keyword_set(minHue) then start = (minHue/360. -1.)*3. else start=0.5
+  if keyword_set(minHue) then start = (minHue/360. -1.)*3. 
   if keyword_set(maxHue) then rot = maxHue/360. - start / 3. - 1.
   if n_elements(minsat) eq 0 then minsat = hue
   if n_elements(maxsat) eq 0 then maxsat = hue
