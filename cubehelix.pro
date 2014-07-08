@@ -96,7 +96,7 @@ end
 pro cubehelix,start=start,rot=rot,hue=hue,gamma=gamma,$
               sat=sat,minsat=minsat,maxsat=maxsat,minHue=minHue,$
               maxHue=maxHue,minlight=minlight,maxlight=maxlight,$
-              get=get,plot=plot,white=white, hex=hex,nlev=nlev
+              get=get,plot=plot,white=white, hex=hex,nlev=nlev,silent=silent
 
   compile_opt defint32, strictarr, strictarrsubs
   compile_opt HIDDEN
@@ -107,7 +107,7 @@ pro cubehelix,start=start,rot=rot,hue=hue,gamma=gamma,$
 ;  always assume 256 colors for IDL
   if not keyword_set(nlev) then nlev = 256.
 
-; use defaults from the preprint if not otherwise set
+; use defaults from the paper if not otherwise set
 ;== updated to deal with user entering 0's
   if n_elements(start) eq 0 then start = 0.5 ; purple
   if n_elements(rot) eq 0 then rot = -1.5
@@ -152,8 +152,10 @@ pro cubehelix,start=start,rot=rot,hue=hue,gamma=gamma,$
   if xr[0] ne -1 then red[xr] = 1
 
 
-  if total(nhi) gt 0 then print,'Warning: color-clipping on high-end'
-  if total(nlo) gt 0 then print,'Warning: color-clipping on low-end'
+  if not keyword_set(silent) then begin
+     if total(nhi) gt 0 then print,'Warning: color-clipping on high-end'
+     if total(nlo) gt 0 then print,'Warning: color-clipping on low-end'
+  endif
 
   if keyword_set(white) then $
      tvlct,red*255.,grn*255.,blu*255. ; load the new color table
