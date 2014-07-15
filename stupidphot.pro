@@ -382,16 +382,20 @@ close,3
 
 ;; ploterror,timeout-timeout[0],-2.5*alog10(gflux[*,0]) + 2.5*alog10(total(gflux[*,1:*],2)),outerr[*,0],psym=6,/ysty,ytitle='delta Mag',xtitle='image'
 
-ploterror,timeout-timeout[0],(outmag[*,0]) - outmag[*,1],outerr[*,0],psym=-6,/ysty,ytitle='delta Mag',xtitle='delta Time (days)'
+ploterror,(timeout-min(timeout))*24.,(outmag[*,0]) - outmag[*,1],outerr[*,0],psym=6,/ysty,ytitle='delta Mag',xtitle='delta Time (hours)'
 
 
-;; plot,timeout-timeout[0],(outmag[*,0]) - outmag[*,1],psym=-6,/ysty,ytitle='delta Mag',xtitle='delta Time (days)'
+;plot,(timeout - min(timeout))*24., gflux[*,0]/(total(gflux[*,1:*],2)),psym=4,/ysty,xtitle='time (hours)',ytitle='flux ratio'
+;oplot,(timeout - min(timeout))*24., smooth(gflux[*,0]/(total(gflux[*,1:*],2)),15,/edge)
+
+
+forprint,textout=imagelist+'gflux_lc.dat',timeout,(gflux[*,0]-(total(gflux[*,1:*],2)))/(total(gflux[*,1:*],2)),/nocomm,f='(D,D,D)'
 
 print,'DONE>>>>'
 print,' The file of output results: ',imagelist+'.out'
 print,''
 print,''
-stop
+;stop
 return
 end
 
