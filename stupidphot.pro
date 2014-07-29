@@ -59,16 +59,24 @@
 ;     - mean profile = stddev
 ;     - FWHM = 2.35*stddev
 
-function flatcombine,flatlisfile
+function flatcombine,flatlisfile,mode
+  if not keyword_set(mode) then mode = 'median'
+  if mode ne 'median' and mode ne 'mean' then begin
+     print,'ERROR: invalid mode. Stupidly using "median" now'
+     mode = 'median'
+  endif
   readcol,flatlisfile,flatlis,f='(A)',/silent
-  print,n_elements(flatlis),' flat images to stupidly combine'
+  print,n_elements(flatlis),' flat images to stupidly combine...'
   im = mrdfits(flatlis[0],/silent,/dscale)
-  im = im/mean(im,/nan,/double)
+  ;normalize first, then add to stack
+  if mode eq 'mean' then im = im/mean(im,/nan,/double) else $
+  if mode eq 'median' then im = im/median(im,/nan,/double)
   for n=1L,n_elements(flatlis)-1 do begin
-;     print,n
-     im_tmp = mrdfits(flatlis[n],/silent,/dscale)
-     im = im + im_tmp/mean(im_tmp,/double,/nan)
+     im_tmp = mrdfits(flatlis[n],/silent,/dscale) 
+     if mode eq 'mean' then im = im + im_tmp/mean(im_tmp,/double,/nan) else $
+     if mode eq 'median' then im = im + im_tmp/median(im_tmp,/double,/nan)
   endfor
+  ;normalize stack...this needs to be reconsidered
   im = im/mean(im,/double,/nan)
   writefits,'flat.fits',im
   return,im
@@ -382,11 +390,17 @@ close,3
 
 ;; ploterror,timeout-timeout[0],-2.5*alog10(gflux[*,0]) + 2.5*alog10(total(gflux[*,1:*],2)),outerr[*,0],psym=6,/ysty,ytitle='delta Mag',xtitle='image'
 
-ploterror,(timeout-min(timeout))*24.,(outmag[*,0]) - outmag[*,1],outerr[*,0],psym=6,/ysty,ytitle='delta Mag',xtitle='delta Time (hours)'
 
+!P.multi=[0,2,1]
 
-;plot,(timeout - min(timeout))*24., gflux[*,0]/(total(gflux[*,1:*],2)),psym=4,/ysty,xtitle='time (hours)',ytitle='flux ratio'
-;oplot,(timeout - min(timeout))*24., smooth(gflux[*,0]/(total(gflux[*,1:*],2)),15,/edge)
+ploterror,(timeout-min(timeout))*24.,(outmag[*,0]) - outmag[*,1],outerr[*,0],psym=6,/ysty,ytitle='delta Mag',xtitle='delta Time (hours)',title='test',yrange=maxmin((outmag[*,0]) - outmag[*,1])
+
+ploterror,(timeout - min(timeout))*24., $
+          gflux[*,0]/(total(gflux[*,1:*],2)),$
+          gferr[*,0]/(total(gflux[*,1:*],2)),$
+          psym=-4,/ysty,xtitle='time (hours)',ytitle='flux ratio',title='Gaussian approx',/xsty
+
+!P.multi=[0,1,1]
 
 
 forprint,textout=imagelist+'gflux_lc.dat',timeout,(gflux[*,0]-(total(gflux[*,1:*],2)))/(total(gflux[*,1:*],2)),/nocomm,f='(D,D,D)'
@@ -395,7 +409,10 @@ print,'DONE>>>>'
 print,' The file of output results: ',imagelist+'.out'
 print,''
 print,''
-;stop
+
+
+stop
+
 return
 end
 
