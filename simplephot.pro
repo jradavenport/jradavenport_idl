@@ -1,5 +1,5 @@
 ;+
-; NAME: STUPIDPHOT - Stupidly Simple Photometry
+; NAME: SIMPLEPHOT - Stupidly Simple Photometry
 ;
 ; PURPOSE:
 ;        Designed to do simple differential aperture photometry, and
@@ -151,11 +151,11 @@ end
 ;-=-=-=-=-=-;-=-=-=-=-=-;-=-=-=-=-=-;-=-=-=-=-=-
 
 
-pro stupidphot,imagelist,display=display,ncomp=ncomp,flatlist=flatlist,biaslist=biaslist,darklist=darklist,doneflat = doneflat,donedark = donedark,reduce=reduce,coord=coord
+pro simplephot,imagelist,display=display,ncomp=ncomp,flatlist=flatlist,biaslist=biaslist,darklist=darklist,doneflat = doneflat,donedark = donedark,reduce=reduce,coord=coord
 
 if n_params() lt 1 then begin
    print,'Error> need to include image list'
-   print,'STUPIDPHOT, imagelist, /display, ncomp=ncomp, flatlist=flatlist, biaslist=biaslist, darklist=darklist, doneflat = doneflat, donedark = donedark, reduce=reduce,coord=coord'
+   print,'SIMPLEPHOT, imagelist, /display, ncomp=ncomp, flatlist=flatlist, biaslist=biaslist, darklist=darklist, doneflat = doneflat, donedark = donedark, reduce=reduce,coord=coord'
    return
 endif
 
