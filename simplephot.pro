@@ -5,11 +5,11 @@
 ;        Designed to do simple differential aperture photometry, and
 ;        thus useful for bright sources in non-crowded fields. Adjusts
 ;        star centers with each image, but cannot handle big jumps
-;        (yet...)
+;        ver well... it will try, but caveat emptor.
 ;
 ;
 ; CALLING SEQUENCE: 
-;        stupidphot, imagelist [, /display, /reduce, ncomp=ncomp,
+;        simplephot, imagelist [, /display, /reduce, ncomp=ncomp,
 ;        flatlist=flatlist, biaslist=biaslist, darklist=darklist,
 ;        doneflat = doneflat, donedark = donedark, coord=coord ]
 ;
@@ -166,7 +166,7 @@ endif
 
 if not keyword_set(ncomp) then ncomp = 2.
 
-print,'STUPIDPHOT, imagelist, /display, ncomp=ncomp, flatlist=flatlist, biaslist=biaslist, darklist=darklist, doneflat = doneflat, donedark = donedark, reduce=reduce,coord=coord'
+print,'SIMPLEPHOT, "imagelist", /display, ncomp=ncomp, flatlist="flatlist", biaslist="biaslist", darklist="darklist", doneflat = "doneflat", donedark = "donedark", /reduce, coord="coord"'
 print,''
 
 
