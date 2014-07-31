@@ -151,22 +151,37 @@ end
 ;-=-=-=-=-=-;-=-=-=-=-=-;-=-=-=-=-=-;-=-=-=-=-=-
 
 
-pro simplephot,imagelist,display=display,ncomp=ncomp,flatlist=flatlist,biaslist=biaslist,darklist=darklist,doneflat = doneflat,donedark = donedark,reduce=reduce,coord=coord
+pro simplephot,imagelist,display=display,ncomp=ncomp,reduce=reduce,$
+               flatlist=flatlist,biaslist=biaslist,darklist=darklist,$
+               doneflat = doneflat,donedark = donedark,coord=coord
+print,'STARTING SIMPLEPHOT'
+print,'.. a time series photometry wrapper by James Davenport ..'
 
+; set device up my way... apologies to the Coyote
+device, retain = 2
+device, true_color = 24
+device, decomposed = 0
+
+; set options for the compiler
+compile_opt defint32, strictarr, strictarrsubs
+; suppress some outputs
+compile_opt HIDDEN
+
+On_error,2
 if n_params() lt 1 then begin
-   print,'Error> need to include image list'
-   print,'SIMPLEPHOT, imagelist, /display, ncomp=ncomp, flatlist=flatlist, biaslist=biaslist, darklist=darklist, doneflat = doneflat, donedark = donedark, reduce=reduce,coord=coord'
+   print,'Error: need to include image list as a string'
+   print,'SIMPLEPHOT, "imagelist", /display, ncomp=ncomp, flatlist="flatlist", biaslist="biaslist", darklist="darklist", doneflat = "doneflat", donedark = "donedark", /reduce, coord="coord"'
    return
 endif
 
-;; if not keyword_set(imagelist) then begin
-;;    spawn,'ls *.fits > images.lis'
-;;    imagelist = 'images.lis'
-;; endif
 
-if not keyword_set(ncomp) then ncomp = 2.
+if not keyword_set(ncomp) then begin
+   print,'>> using default # of comparision stars: ncomp=2'
+   ncomp = 2.
+endif
 
-print,'SIMPLEPHOT, "imagelist", /display, ncomp=ncomp, flatlist="flatlist", biaslist="biaslist", darklist="darklist", doneflat = "doneflat", donedark = "donedark", /reduce, coord="coord"'
+
+
 print,''
 
 
@@ -174,8 +189,10 @@ APERTURE = 15.   ; for ap phot
 SKYY = [28,38]   ; inner and outer rad
 SMBOX = 15       ; search box side length to match each frame over
 FWHM = 5.        ; approx FWHM
+
 timekey = 'DATE-OBS' ; 'UTCSTAMP'
 print,'>> using header keyword ',timekey
+
 ROUNDLIM = [-1.,1.]   ; i wouldnt change this
 SHARPLIM = [0.2,1.1]  ; i wouldnt change this
 
