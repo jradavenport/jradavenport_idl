@@ -388,7 +388,7 @@ endfor
 close,1
 
 
-if keyword_set(gaussian) do begin
+if keyword_set(gaussian) then begin
    openw,2,imagelist+'_gflux.out'
    printf,2,transpose(gflux)
    close,2
@@ -407,7 +407,7 @@ ploterror, (timeout-min(timeout))*24., psym=6, /ysty,$
            yrange=[max((outmag[*,0]) - outmag[*,1]),$
                    min((outmag[*,0]) - outmag[*,1])]
 
-if keyword_set(gaussian) do begin
+if keyword_set(gaussian) then begin
    ploterror,(timeout - min(timeout))*24., $
              gflux[*,0]/(total(gflux[*,1:*],2)),$
              gferr[*,0]/(total(gflux[*,1:*],2)),$
