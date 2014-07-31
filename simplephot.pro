@@ -27,7 +27,7 @@
 ;
 ;        coord - string name of file containing X,Y coordinates for
 ;                stars to analyze. The first star must be the target
-;                If used, STUPIDPHOT will not prompt for target
+;                If used, SIMPLEPHOT will not prompt for target
 ;                identification.
 ;
 ; KEYWORD PARAMETERS:
@@ -39,12 +39,12 @@
 ;
 ;
 ; OPTIONAL OUTPUTS:
-;        If flatlist is used, STUPIDPHOT will write flat.fits.
-;        If darklist or biaslist is used, STUPIDPHOT will write
+;        If flatlist is used, SIMPLEPHOT will write flat.fits.
+;        If darklist or biaslist is used, SIMPLEPHOT will write
 ;             zero.fits.
 ;
 ; EXAMPLE:
-;        IDL> stupidphot,'image.list', /reduce, ncomp=3
+;        IDL> simplephot,'image.list', /reduce, ncomp=3
 ;
 ; MODIFICATION HISTORY:
 ;
@@ -153,7 +153,8 @@ end
 
 pro simplephot,imagelist,display=display,ncomp=ncomp,reduce=reduce,$
                flatlist=flatlist,biaslist=biaslist,darklist=darklist,$
-               doneflat = doneflat,donedark = donedark,coord=coord
+               doneflat=doneflat,donedark=donedark,coord=coord,gaussian=gaussian
+
 print,'STARTING SIMPLEPHOT'
 print,'.. a time series photometry wrapper by James Davenport ..'
 
@@ -179,8 +180,6 @@ if not keyword_set(ncomp) then begin
    print,'>> using default # of comparision stars: ncomp=2'
    ncomp = 2.
 endif
-
-
 
 print,''
 
@@ -293,12 +292,13 @@ gflux =  fltarr(n_elements(images),ncomp+1)-1.
 gferr =  fltarr(n_elements(images),ncomp+1)-1.
 fwhmout = dblarr(n_elements(images))
 
-   tmparr = '(A, '
+   tmparr = '(A, D, '
    for v=0L,2.*ncomp do tmparr = tmparr+'D,'
 
 close,/all
 openw,1,imagelist+'.out'
 nimage = n_elements(images)
+
 for n=0L,nimage-1 do begin
 ;   run find,aper,extract time
    print,n,' / ',nimage-1
@@ -310,25 +310,22 @@ for n=0L,nimage-1 do begin
 
    if keyword_set(display) then begin
       cubehelix
-      plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)',title=images[n]
+      plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,$
+           /nodata,position=[.1,.1,.95,.95],$
+           xtitle='X (pixel)',ytitle='Y (pixel)',title=images[n]
       tvimage,im,position=[.1,.1,.95,.95]
-
    endif
 
 ; find and phot
-   find,im,xf,yf,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3., fwhm ,roundlim, sharplim,/monitor,/silent
+   find,im,xf,yf,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3.,$
+        fwhm ,roundlim, sharplim,/monitor,/silent
    ;; aper,im,xf,yf,mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
 
-;   loadct,39,/silent
-;   oplot,xf,yf,psym=6,color=150,thick=4
 
    for i=0L,ncomp do begin
       mt = where(xf gt xx[i]-smbox and xf lt xx[i]+smbox and yf gt yy[i]-smbox and yf lt yy[i]+smbox)
 ; just choose the first match, if any
       if mt[0] ne -1 then begin
-         ;; outmag[n,i] = mag[mt]
-         ;; outerr[n,i] = err[mt]
-
          xx[i] = xf[mt[0]] ; update coords
          yy[i] = yf[mt[0]]
       endif
@@ -360,75 +357,73 @@ for n=0L,nimage-1 do begin
    endfor
 
    if total(gflux[n,*]) le 0 then begin
-      print,'OH NO! stuff isnt where it should be...'
+      print,"OH NO! Stars aren't where they should be..."
       resetcoords_man,images[n],ncomp,xx,yy
    ;;    resetcoords,images[n],ncomp,xx,yy
+
        for i=0L,ncomp do begin
-          aper,im,xx[i],yy[i],mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
+          APER,im,xx[i],yy[i],mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
           outmag[n,i] = mag
           outerr[n,i] = err
-   ;;       tmpcoord = [(xx[i]-5*fwhm),(xx[i]+5*fwhm),(yy[i]-5*fwhm),(yy[i]+5*fwhm)]
-   ;;       if tmpcoord[0] lt 0 then tmpcoord[0] = 0
-   ;;       if tmpcoord[2] lt 0 then tmpcoord[2] = 0
-   ;;       if tmpcoord[3] ge imsz[1] then tmpcoord[3] = imsz[1]
-   ;;       if tmpcoord[4] ge imsz[2] then tmpcoord[4] = imsz[2]
-         
-   ;;       imtest = im[tmpcoord[0]:tmpcoord[1],tmpcoord[2]:tmpcoord[3]]
-   ;;       gtest = GAUSS2DFIT(imtest,Atest, /tilt)      
-   ;;       gflux[n,i] = total(gtest-atest[0])
        endfor
    endif
 
-   printf,1,time,[transpose(outmag[n,*]),transpose(outerr[n,*])],f=tmparr+'D)'
-
-;   timeout[n] = date_conv(time);,'M')
-;   timeout[n] = date_conv(sxpar(hdr,timekey),'M')
+   ;-- date format set up for YYYY-MM-DDTHH:MM:SS
    yr = strmid(time,0,4)
    mo = strmid(time,5,2)
    dd = strmid(time,8,2)
    hh = strmid(time,11,2)
    mi = strmid(time,14,2)
    ss = strmid(time,17,2)
-   timeout[n] = julday(mo,dd,yr,hh,mi,ss) - 2400000.5d0
+   timeout[n] = julday(mo,dd,yr,hh,mi,ss) ;- 2400000.5d0
 
    fwhmout[n] = (atest[2]+atest[3])/2.
 
+   printf,1,f=tmparr+'D)',time,timeout, $
+          [transpose(outmag[n,*]),transpose(outerr[n,*])]
 endfor
 close,1
 
-openw,2,imagelist+'_gflux.out'
-printf,2,transpose(gflux)
-close,2
 
-openw,3,imagelist+'_gferr.out'
-printf,3,transpose(gferr)
-close,3 
-
-
-;; ploterror,timeout-timeout[0],-2.5*alog10(gflux[*,0]) + 2.5*alog10(total(gflux[*,1:*],2)),outerr[*,0],psym=6,/ysty,ytitle='delta Mag',xtitle='image'
-
-
-!P.multi=[0,2,1]
-
-ploterror,(timeout-min(timeout))*24.,(outmag[*,0]) - outmag[*,1],outerr[*,0],psym=6,/ysty,ytitle='delta Mag',xtitle='delta Time (hours)',title='test',yrange=maxmin((outmag[*,0]) - outmag[*,1])
-
-ploterror,(timeout - min(timeout))*24., $
-          gflux[*,0]/(total(gflux[*,1:*],2)),$
-          gferr[*,0]/(total(gflux[*,1:*],2)),$
-          psym=-4,/ysty,xtitle='time (hours)',ytitle='flux ratio',title='Gaussian approx',/xsty
-
-!P.multi=[0,1,1]
+if keyword_set(gaussian) do begin
+   openw,2,imagelist+'_gflux.out'
+   printf,2,transpose(gflux)
+   close,2
+   
+   openw,3,imagelist+'_gferr.out'
+   printf,3,transpose(gferr)
+   close,3 
+endif
 
 
-forprint,textout=imagelist+'gflux_lc.dat',timeout,(gflux[*,0]-(total(gflux[*,1:*],2)))/(total(gflux[*,1:*],2)),/nocomm,f='(D,D,D)'
+;; !P.multi=[0,2,1]
+
+ploterror, (timeout-min(timeout))*24., psym=6, /ysty,$
+           (outmag[*,0]) - outmag[*,1],outerr[*,0],$
+           ytitle='delta Mag (target - comp1)', xtitle='delta Time (hours)',$
+           yrange=[max((outmag[*,0]) - outmag[*,1]),$
+                   min((outmag[*,0]) - outmag[*,1])]
+
+if keyword_set(gaussian) do begin
+   ploterror,(timeout - min(timeout))*24., $
+             gflux[*,0]/(total(gflux[*,1:*],2)),$
+             gferr[*,0]/(total(gflux[*,1:*],2)),$
+             psym=-4,/ysty,xtitle='time (hours)',ytitle='flux ratio [target / sum(comps)]',$
+             title='Gaussian',/xsty
+endif
+
+;; !P.multi=[0,1,1]
+
+;; forprint,textout=imagelist+'gflux_lc.dat',timeout,(gflux[*,0]-(total(gflux[*,1:*],2)))/(total(gflux[*,1:*],2)),/nocomm,f='(D,D,D)'
+
 
 print,'DONE>>>>'
-print,' The file of output results: ',imagelist+'.out'
+print,'>> The file of output results: ',imagelist+'.out'
 print,''
 print,''
 
 
-stop
+;; stop
 
 return
 end
