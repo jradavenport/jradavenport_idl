@@ -5,7 +5,8 @@
 ;        Designed to do simple differential aperture photometry, and
 ;        thus useful for bright sources in non-crowded fields. Adjusts
 ;        star centers with each image, but cannot handle big jumps
-;        ver well... it will try, but caveat emptor.
+;        very well... it will try, but caveat emptor. Using IDL
+;        versions of DAOPHOT (aper, find)
 ;
 ;
 ; CALLING SEQUENCE: 
@@ -35,7 +36,9 @@
 ;        /reduce - write the flat & bias reduced images.
 ;
 ; OUTPUTS:
-;
+;        creates file imagelist.out with columns:
+;        TIME Stamp, TIME (JD), mag_target, mag_comp1... 
+;                    err_target, err_comp1... 
 ;
 ;
 ; OPTIONAL OUTPUTS:
@@ -184,10 +187,10 @@ endif
 print,''
 
 
-APERTURE = 15.   ; for ap phot
-SKYY = [28,38]   ; inner and outer rad
-SMBOX = 15       ; search box side length to match each frame over
-FWHM = 5.        ; approx FWHM
+if not keyword_set(APERTURE) then APERTURE = 15. ; for ap phot
+if not keyword_set(SKYY) then SKYY = [28,38]     ; inner and outer rad
+if not keyword_set(SMBOX) then SMBOX = 15        ; search box side length to match each frame over
+if not keyword_set(FWHM) then FWHM = 5.          ; approx FWHM
 
 timekey = 'DATE-OBS' ; 'UTCSTAMP'
 print,'>> using header keyword ',timekey
