@@ -184,9 +184,18 @@ print,''
 
 
 if not keyword_set(ncomp) then begin
-   print,'>> using default # of comparision stars: ncomp=2'
-   ncomp = 2.
+   if not keyword_set(coord) then begin
+      print,'>> using default # of comparision stars: ncomp=2'
+      ncomp = 2.
+   endif
+   if keyword_set(coord) then begin
+      print,'>> using previous coords'
+      readcol,coord,/silent,junk
+      ncomp = float(n_elements(junk))-1.
+   endif
 endif
+
+
 
 print,''
 
