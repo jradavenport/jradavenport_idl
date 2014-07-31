@@ -73,11 +73,11 @@ function flatcombine,flatlisfile,mode
   im = mrdfits(flatlis[0],/silent,/dscale)
   ;normalize first, then add to stack
   if mode eq 'mean' then im = im/mean(im,/nan,/double) else $
-  if mode eq 'median' then im = im/median(im,/nan,/double)
+  if mode eq 'median' then im = im/median(im)
   for n=1L,n_elements(flatlis)-1 do begin
      im_tmp = mrdfits(flatlis[n],/silent,/dscale) 
      if mode eq 'mean' then im = im + im_tmp/mean(im_tmp,/double,/nan) else $
-     if mode eq 'median' then im = im + im_tmp/median(im_tmp,/double,/nan)
+     if mode eq 'median' then im = im + im_tmp/median(im_tmp)
   endfor
   ;normalize stack...this needs to be reconsidered
   im = im/mean(im,/double,/nan)
@@ -107,6 +107,7 @@ pro resetcoords_man,img,ncomp,xx,yy
   plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
   tvimage,(smooth(im,[1,1],/edge,/nan)),position=[.1,.1,.95,.95]
   print,'> select target'
+  print,'> (green boxes indicate stars auto-found by FIND)'
   x1=1
   y1=1
   CURSOR,x1,y1,/down,/data
@@ -179,6 +180,9 @@ if n_params() lt 1 then begin
 endif
 
 
+print,''
+
+
 if not keyword_set(ncomp) then begin
    print,'>> using default # of comparision stars: ncomp=2'
    ncomp = 2.
@@ -232,18 +236,21 @@ if keyword_set(flatlist) and not keyword_set(doneflat) then begin
 endif
 if keyword_set(doneflat) then flat = mrdfits(doneflat,0,/silent,/dscale)
 
+;-- this is how you reduce data from raw
 im = (im - bias)/flat
 
 loadct,0,/silent
 
 if not keyword_set(coord) or keyword_set(display) then begin
+   window,0,xsize=800,ysize=800,title='SIMPLEPHOT'
    plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
    tvimage,(smooth(im,[1,1],/edge,/nan)),position=[.1,.1,.95,.95]
 
    print,''
    print,n_elements(images),' images to process...'
    print,''
-   print,'> size your window, then click in the window'
+   print,'> re-size your window if desired, then click anywhere in the window'
+   print,''
    clkx = 1
    clky = 1
 
@@ -251,25 +258,27 @@ if not keyword_set(coord) or keyword_set(display) then begin
 endif
 
 if not keyword_set(coord) then begin
-   cubehelix
+   ;cubehelix
+   loadct,5,/silent ; STD GAMMA-II
    plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
    tvimage,smooth(im,[5,5],/edge,/nan),position=[.1,.1,.95,.95]
    print,''
    
    find,im,xtmp,ytmp,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3., fwhm ,roundlim, sharplim,/monitor,/silent
-   loadct,39,/silent
+   loadct,39,/silent ; RAINBOW
    oplot,xtmp,ytmp,psym=6,color=150,thick=5
    
-   print,'> select target'
+   print,'> select target star'
    x1=1
    y1=1
    CURSOR,x1,y1,/down,/data
    oplot,COS(FINDGEN(17) * (!PI*2/16.))*10+x1, SIN(FINDGEN(17) * (!PI*2/16.))*10+y1,color=250,thick=4
+   print,''
 ;==============
    xc = 0
    yc = 0
    for n=0L,ncomp-1 do begin
-      print,'> select comparison ',n+1
+      print,'> select comparison ',strtrim(string(n+1),2)
       xx=1
       yy=1
       
@@ -283,6 +292,12 @@ if not keyword_set(coord) then begin
 
    xx = [x1,xc]  ; the target and the comparison stars
    yy = [y1,yc]
+   
+   ; dump a coord file for later use!
+   openw,7,imagelist+'.coord'
+   for v=0l,ncomp do $
+      printf,7,xx[v],yy[v]
+   close,7
 endif 
 if keyword_set(coord) then readcol,coord,xx,yy,f='(F)',/silent
 ncomp = n_elements(xx)-1.
@@ -405,13 +420,14 @@ ploterror, (timeout-min(timeout))*24., psym=6, /ysty,$
            (outmag[*,0]) - outmag[*,1],outerr[*,0],$
            ytitle='delta Mag (target - comp1)', xtitle='delta Time (hours)',$
            yrange=[max((outmag[*,0]) - outmag[*,1]),$
-                   min((outmag[*,0]) - outmag[*,1])]
+                   min((outmag[*,0]) - outmag[*,1])],$
+           title='Aperture Phot'
 
 if keyword_set(gaussian) then begin
    ploterror,(timeout - min(timeout))*24., $
              gflux[*,0]/(total(gflux[*,1:*],2)),$
              gferr[*,0]/(total(gflux[*,1:*],2)),$
-             psym=-4,/ysty,xtitle='time (hours)',ytitle='flux ratio [target / sum(comps)]',$
+             psym=4,/ysty,xtitle='time (hours)',ytitle='flux ratio [target / sum(comps)]',$
              title='Gaussian',/xsty
 endif
 
