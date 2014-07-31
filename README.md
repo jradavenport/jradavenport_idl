@@ -9,7 +9,7 @@ This is a collection of routines that I have created to help make using IDL easi
 ## Astronomy Routines
 - **astro_const.pro**:  large list of astronomical constants in *cgs* units
 - **brute_match.pro**:  a brute-force 2D nearest neighbor match
-- **stupidphot.pro**:  a stupid (simple) routine for time series differential photometry on a stack of images. Can do image reduction too.
+- **simplephot.pro**:  a stupid (simple) routine for time series differential photometry on a stack of images. Can do image reduction too.
 
 ## Plotting Routines
 - **contour_plus.pro**:  create contour plots or contour+scatter plots from (x,y) points. 
