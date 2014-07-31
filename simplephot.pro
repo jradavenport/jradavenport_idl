@@ -406,7 +406,7 @@ for n=0L,nimage-1 do begin
 
    fwhmout[n] = (atest[2]+atest[3])/2.
 
-   printf,1,f=tmparr+'D)',time,timeout, $
+   printf,1,f=tmparr+'D)',time,timeout[n], $
           [transpose(outmag[n,*]),transpose(outerr[n,*])]
 endfor
 close,1
