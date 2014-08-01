@@ -34,6 +34,8 @@
 ; KEYWORD PARAMETERS:
 ;        /display - show every image
 ;        /reduce - write the flat & bias reduced images.
+;        /gaussian - fit stars with a 2D gaussian (does anyway) and
+;                    save other output files.
 ;
 ; OUTPUTS:
 ;        creates file imagelist.out with columns:
@@ -162,7 +164,7 @@ pro simplephot,imagelist,display=display,ncomp=ncomp,reduce=reduce,$
 print,'STARTING SIMPLEPHOT'
 print,'.. a time series photometry wrapper by James Davenport ..'
 
-; set device up my way... apologies to the Coyote
+; set graphics device up my way... with apologies to the Coyote
 device, retain = 2
 device, true_color = 24
 device, decomposed = 0
@@ -175,7 +177,7 @@ compile_opt HIDDEN
 On_error,2
 if n_params() lt 1 then begin
    print,'Error: need to include image list as a string'
-   print,'SIMPLEPHOT, "imagelist", /display, ncomp=ncomp, flatlist="flatlist", biaslist="biaslist", darklist="darklist", doneflat = "doneflat", donedark = "donedark", /reduce, coord="coord"'
+   print,'SIMPLEPHOT, "imagelist", /display, ncomp=ncomp, flatlist="flatlist", biaslist="biaslist", darklist="darklist", doneflat = "doneflat", donedark = "donedark", /reduce, /gaussian, coord="coord"'
    return
 endif
 
@@ -319,7 +321,7 @@ gflux =  fltarr(n_elements(images),ncomp+1)-1.
 gferr =  fltarr(n_elements(images),ncomp+1)-1.
 fwhmout = dblarr(n_elements(images))
 
-   tmparr = '(A, D, '
+   tmparr = '(A, A, D, '
    for v=0L,2.*ncomp do tmparr = tmparr+'D,'
 
 close,/all
@@ -406,7 +408,7 @@ for n=0L,nimage-1 do begin
 
    fwhmout[n] = (atest[2]+atest[3])/2.
 
-   printf,1,f=tmparr+'D)',time,timeout[n], $
+   printf,1,f=tmparr+'D)',imagelist[n],time,timeout[n], $
           [transpose(outmag[n,*]),transpose(outerr[n,*])]
 endfor
 close,1
@@ -423,24 +425,22 @@ if keyword_set(gaussian) then begin
 endif
 
 
-;; !P.multi=[0,2,1]
-
 ploterror, (timeout-min(timeout))*24., psym=6, /ysty,$
            (outmag[*,0]) - outmag[*,1],outerr[*,0],$
            ytitle='delta Mag (target - comp1)', xtitle='delta Time (hours)',$
            yrange=[max((outmag[*,0]) - outmag[*,1]),$
                    min((outmag[*,0]) - outmag[*,1])],$
-           title='Aperture Phot'
+           title='Aperture Phot',charsize=1.4
 
 if keyword_set(gaussian) then begin
    ploterror,(timeout - min(timeout))*24., $
              gflux[*,0]/(total(gflux[*,1:*],2)),$
              gferr[*,0]/(total(gflux[*,1:*],2)),$
              psym=4,/ysty,xtitle='time (hours)',ytitle='flux ratio [target / sum(comps)]',$
-             title='Gaussian',/xsty
+             title='Gaussian',/xsty,charsize=1.4
 endif
 
-;; !P.multi=[0,1,1]
+
 
 ;; forprint,textout=imagelist+'gflux_lc.dat',timeout,(gflux[*,0]-(total(gflux[*,1:*],2)))/(total(gflux[*,1:*],2)),/nocomm,f='(D,D,D)'
 
