@@ -112,13 +112,15 @@ pro cubehelix,start=start,rot=rot,hue=hue,gamma=gamma,$
   if n_elements(start) eq 0 then start = 0.5 ; purple
   if n_elements(rot) eq 0 then rot = -1.5
   if n_elements(gamma) eq 0 then gamma = 1.0
-  if n_elements(hue) eq 0 then hue = 1.2
-  if n_elements(sat) eq 0 then hue = 1.2 ; override HUE w/ SAT
+
+  thehue = 1.2 ; default hue
+  if n_elements(hue) ne 0 then thehue = hue
+  if n_elements(sat) ne 0 then thehue = sat ; override HUE w/ SAT
 
   if keyword_set(minHue) then start = (minHue/360. -1.)*3. 
   if keyword_set(maxHue) then rot = maxHue/360. - start / 3. - 1.
-  if n_elements(minsat) eq 0 then minsat = hue
-  if n_elements(maxsat) eq 0 then maxsat = hue
+  if n_elements(minsat) eq 0 then minsat = thehue
+  if n_elements(maxsat) eq 0 then maxsat = thehue
   if n_elements(minlight) eq 0 then minlight = 0.
   if n_elements(maxlight) eq 0 then maxlight = 1.
 
@@ -176,7 +178,7 @@ pro cubehelix,start=start,rot=rot,hue=hue,gamma=gamma,$
      xyouts,.84,.85,/norm,'start='+strtrim(string(start),2)
      xyouts,.84,.8 ,/norm,'rot='+strtrim(string(rot),2)
      xyouts,.84,.75,/norm,'gamma='+strtrim(string(gamma),2)
-     xyouts,.84,.7 ,/norm,'hue='+strtrim(string(hue),2)
+     xyouts,.84,.7 ,/norm,'hue='+strtrim(string(thehue),2)
   endif
 
 return
