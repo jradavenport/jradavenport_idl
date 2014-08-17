@@ -30,16 +30,12 @@
 ; KEYWORD PARAMETERS:
 ;	reverse_ct = reverse the color of the contours (best for postscripts)
 ;
-; COMMON BLOCKS:
+; KNOWN ISSUES:
 ;	If binlimit is too high the system can hang, but a warning
 ;	should be displayed before that happens
 ;
 ; PROGRAMS CALLED: hist_nd, reverse_ct, pixel_contour
 ;
-; EXAMPLE:
-;
-;
-; MODIFICATION HISTORY:
 ;
 ;-
 
