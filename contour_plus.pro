@@ -252,14 +252,14 @@ if keyword_set(no_fill) then fillyn = 0
 if not keyword_set(no_contour) and not keyword_set(no_fill) then begin
  ; if you do want the FILLED contours
    xx=xx+xbin/2. & yy=yy+ybin/2.
-   contour,hist,xx,yy,/overplot,fill=fillyn,levels=levels,c_color=clrz,background=bcolor
+   contour,hist,xx,yy,/overplot,fill=fillyn,levels=levels,c_color=clrz,background=bcolor,/downhill
    if not keyword_set(no_line) then $
-      contour,hist,xx,yy,/overplot,color=!p.background,levels=levels
+      contour,hist,xx,yy,/overplot,color=!p.background,levels=levels,/downhill
 endif
 if not keyword_set(no_contour) and keyword_set(no_fill) then begin
  ; if you do want the EMPTY contours
    xx=xx+xbin/2. & yy=yy+ybin/2.
-   contour,hist,xx,yy,/overplot,fill=fillyn,levels=levels,_extra = e
+   contour,hist,xx,yy,/overplot,fill=fillyn,levels=levels,_extra = e,/downhill
 endif
 
 if keyword_set(pixel) then begin ; pixels
