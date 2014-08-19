@@ -57,12 +57,12 @@ yflux = median(yy,bb)
 testout = interpol(yflux[findgen(n_elements(xx)/bb)*bb],xx[findgen(n_elements(xx)/bb)*bb],xx,/lsqu)
 
 
-testout = smooth(testout,1.+5*kk,/edge)
+testout = smooth(testout,1.+5*kk,/edge_truncate)
 nn = (yy-testout);/median(yy)
 
 cut = 0.7; pick the good fit data, be strict! 
 
-ok = where(abs(smooth(nn,2,/edge)) lt stddev(nn)*cut) 
+ok = where(abs(smooth(nn,2,/edge_truncate)) lt stddev(nn)*cut) 
 
 testout0 = testout
 
@@ -72,10 +72,10 @@ bb = 35 * kk
 yflux = median(yy[ok],bb)
  testout = interpol(yflux[findgen(n_elements(ok)/bb)*bb],xx[ok[findgen(n_elements(ok)/bb)*bb]],xx,/spline)
 
-testout = smooth(testout,5,/edge)
+testout = smooth(testout,5,/edge_truncate)
 nn2 = (yy-testout);/median(yy)
 ;plot,xx,nn2,psym=3,/xsty,yrange=[-.01,.01]
-ok2 = where(abs(smooth(nn2,2,/edge)) lt stddev(nn2)*cut) 
+ok2 = where(abs(smooth(nn2,2,/edge_truncate)) lt stddev(nn2)*cut) 
 
 testout1 = testout
 
