@@ -10,6 +10,7 @@ This is a collection of routines that I have created to help make using IDL easi
 - **astro_const.pro**:  large list of astronomical/physical constants in *cgs* units.
 - **brute_match.pro**:  a brute-force 2D nearest neighbor match using a search radius. Good for RA,Dec list matching.
 - **simplephot.pro**:  a stupid (simple) routine for time series differential photometry on a stack of images. Can do basic image reduction too. Good for on-the-fly analysis!
+- **ra2id.pro**: convert (ra,dec) in decimal degrees to string with `Jhhmmss.s+ddmmss.s` format. Good for generating object names
 
 ## Plotting Routines
 - **contour_plus.pro**:  create contour plots or contour+scatter (for high density data) plots from (x,y) points. Makes many semi-intelligent choices for contour levels, etc. Uses `Histogram` for excellent speed and scalability.
