@@ -379,7 +379,8 @@ for n=0L,nimage-1 do begin
 
 
    for i=0L,ncomp do begin
-      mt = where(xf gt xx[i]-smbox and xf lt xx[i]+smbox and yf gt yy[i]-smbox and yf lt yy[i]+smbox)
+      mt = where(xf gt xx[i]-smbox and xf lt xx[i]+smbox and $
+                 yf gt yy[i]-smbox and yf lt yy[i]+smbox)
 ; just choose the first match, if any
       if mt[0] ne -1 then begin
          xx[i] = xf[mt[0]] ; update coords
@@ -435,7 +436,7 @@ for n=0L,nimage-1 do begin
 
    fwhmout[n] = (atest[2]+atest[3])/2.
 
-   printf,1,f=tmparr+'D)',imagelist[n],time,timeout[n], $
+   printf,1,f=tmparr+'D)',images[n],time,timeout[n], $
           [transpose(outmag[n,*]),transpose(outerr[n,*])]
 endfor
 close,1
@@ -452,8 +453,11 @@ if keyword_set(gaussian) then begin
 endif
 
 
+;compmag = alog10(total(10d0^(outmag[*,1:*]),2))
+compmag = outmag[*,1]
+
 ploterror, (timeout-min(timeout))*24., psym=6, /ysty,$
-           (outmag[*,0]) - outmag[*,1],outerr[*,0],$
+           (outmag[*,0]) - compmag, outerr[*,0], $
            ytitle='delta Mag (target - comp1)', xtitle='delta Time (hours)',$
            yrange=[max((outmag[*,0]) - outmag[*,1]),$
                    min((outmag[*,0]) - outmag[*,1])],$
@@ -463,7 +467,8 @@ if keyword_set(gaussian) then begin
    ploterror,(timeout - min(timeout))*24., $
              gflux[*,0]/(total(gflux[*,1:*],2)),$
              gferr[*,0]/(total(gflux[*,1:*],2)),$
-             psym=4,/ysty,xtitle='time (hours)',ytitle='flux ratio [target / sum(comps)]',$
+             psym=4,/ysty,xtitle='time (hours)',$
+             ytitle='flux ratio [target / sum(comps)]',$
              title='Gaussian',/xsty,charsize=1.4
 endif
 
@@ -480,7 +485,7 @@ endif
 print,'  goodbye'
 
 
-;; stop
+ stop
 
 return
 end
