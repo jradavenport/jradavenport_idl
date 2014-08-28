@@ -84,6 +84,7 @@ function flatcombine,flatlisfile,mode
   ;normalize stack...this needs to be reconsidered
   im = im/mean(im,/double,/nan)
   writefits,'flat.fits',im
+
   return,im
 end
 
@@ -98,6 +99,7 @@ function zerocombine,flatlisfile
   endfor
   im = im/float(n_elements(flatlis))
   writefits,'zero.fits',im
+
   return,im
 end
 
@@ -175,46 +177,41 @@ compile_opt defint32, strictarr, strictarrsubs
 compile_opt HIDDEN
 
 On_error,2
-if n_params() lt 1 then begin
-   print,'Error: need to include image list as a string'
-   print,'SIMPLEPHOT, "imagelist", /display, ncomp=ncomp, flatlist="flatlist", biaslist="biaslist", darklist="darklist", doneflat = "doneflat", donedark = "donedark", /reduce, /gaussian, coord="coord"'
-   return
+;; if n_params() lt 1 then begin
+;;    print,'Error: need to include image list as a string'
+    print,'SIMPLEPHOT, "imagelist", /display, ncomp=ncomp, flatlist="flatlist", biaslist="biaslist", darklist="darklist", doneflat = "doneflat", donedark = "donedark", /reduce, /gaussian, coord="coord"'
+;;    return
+;; endif
+
+if keyword_set(imagelist) then begin
+   print,'Using image list: ',imagelist
+   print,''
+   if not keyword_set(ncomp) then begin
+      if not keyword_set(coord) then begin
+         print,'>> using default # of comparision stars: ncomp=2'
+         ncomp = 2.
+      endif
+      if keyword_set(coord) then begin
+         print,'>> using previous coords'
+         readcol,coord,/silent,junk
+         ncomp = float(n_elements(junk))-1.
+      endif
+   endif
+   
+   print,''
+   if not keyword_set(APERTURE) then APERTURE = 15. ; for ap phot
+   if not keyword_set(SKYY) then SKYY = [28,38]     ; inner and outer rad
+   if not keyword_set(SMBOX) then SMBOX = 15 ; search box side length to match each frame over
+   if not keyword_set(FWHM) then FWHM = 5.   ; approx FWHM
+   
+   timekey = 'DATE-OBS'         ; 'UTCSTAMP'
+   print,'>> using header keyword ',timekey
+   
+   ROUNDLIM = [-1.,1.]          ; i wouldnt change this
+   SHARPLIM = [0.2,1.1]         ; i wouldnt change this
 endif
 
-
-print,''
-
-
-if not keyword_set(ncomp) then begin
-   if not keyword_set(coord) then begin
-      print,'>> using default # of comparision stars: ncomp=2'
-      ncomp = 2.
-   endif
-   if keyword_set(coord) then begin
-      print,'>> using previous coords'
-      readcol,coord,/silent,junk
-      ncomp = float(n_elements(junk))-1.
-   endif
-endif
-
-
-
-print,''
-
-
-if not keyword_set(APERTURE) then APERTURE = 15. ; for ap phot
-if not keyword_set(SKYY) then SKYY = [28,38]     ; inner and outer rad
-if not keyword_set(SMBOX) then SMBOX = 15        ; search box side length to match each frame over
-if not keyword_set(FWHM) then FWHM = 5.          ; approx FWHM
-
-timekey = 'DATE-OBS' ; 'UTCSTAMP'
-print,'>> using header keyword ',timekey
-
-ROUNDLIM = [-1.,1.]   ; i wouldnt change this
-SHARPLIM = [0.2,1.1]  ; i wouldnt change this
-
-
-
+;------------ how this works --------------------
 ; read the first image
 ; show it
 ; pick the stars you want interactively (cursor)
@@ -222,17 +219,21 @@ SHARPLIM = [0.2,1.1]  ; i wouldnt change this
 ; match stupidly to the x,y master list, using dumb small-big box
 ; if target star is not found, show this image and re-pick
 
-readcol,imagelist,f='(A)',images,/silent
+if keyword_set(imagelist) then begin
+   readcol,imagelist,f='(A)',images,/silent
+   
+   ;-- read first image in
+   im = (mrdfits(images[0],0,hdr,/silent,/dscale))
+   time = sxpar(hdr,timekey)
+   imsz = size(im)
+endif
 
-
-im = (mrdfits(images[0],0,hdr,/silent,/dscale))
-time = sxpar(hdr,timekey)
-imsz = size(im)
-
+;-- optionally combine the darks/biases/flats
+;   NOTE: does not require imagelist to be defined!
 bias = 0d0
-if keyword_set(zerolist) and not keyword_set(darklist) and not keyword_set(donedark) then begin
+if keyword_set(biaslist) and not keyword_set(darklist) and not keyword_set(donedark) then begin
    print,'COMBINING BIASES... BE PATIENT'
-   bias = zerocombine(zerolist)
+   bias = zerocombine(biaslist)
 endif
 if keyword_set(darklist) and not keyword_set(donedark) then begin
    print,'COMBINING DARKS... BE PATIENT'
@@ -247,8 +248,11 @@ if keyword_set(flatlist) and not keyword_set(doneflat) then begin
 endif
 if keyword_set(doneflat) then flat = mrdfits(doneflat,0,/silent,/dscale)
 
+
+;--- now reduce/analyze the data from imagelist
+if keyword_set(imagelist) then begin
 ;-- this is how you reduce data from raw
-im = (im - bias)/flat
+   im = (im - bias)/flat
 
 loadct,0,/silent
 
@@ -448,7 +452,9 @@ endif
 print,'DONE>>>>'
 print,'>> The file of output results: ',imagelist+'.out'
 print,''
-print,''
+
+endif
+print,'  goodbye'
 
 
 ;; stop
