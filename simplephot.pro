@@ -84,7 +84,12 @@ function flatcombine,flatlisfile,mode
   ;normalize stack...this needs to be reconsidered
   im = im/mean(im,/double,/nan)
   writefits,'flat.fits',im
-
+  print,'> FLATCOMBINE stats:'
+  print,'    median = ',median(im)
+  print,'    mean   = ',mean(im)
+  print,'    stddev = ',stddev(im)
+  print,'    min    = ',min(im)
+  print,'    max    = ',max(im)
   return,im
 end
 
@@ -99,7 +104,12 @@ function zerocombine,flatlisfile
   endfor
   im = im/float(n_elements(flatlis))
   writefits,'zero.fits',im
-
+  print,'> ZEROCOMBINE stats:'
+  print,'    median = ',median(im)
+  print,'    mean   = ',mean(im)
+  print,'    stddev = ',stddev(im)
+  print,'    min    = ',min(im)
+  print,'    max    = ',max(im)
   return,im
 end
 
