@@ -64,7 +64,7 @@
 ;     - mean profile = stddev
 ;     - FWHM = 2.35*stddev
 
-function flatcombine,flatlisfile,mode
+function flatcombine,flatlisfile, bias mode=mode
   if not keyword_set(mode) then mode = 'median'
   if mode ne 'median' and mode ne 'mean' then begin
      print,'ERROR: invalid mode. Stupidly using "median" now'
@@ -72,12 +72,12 @@ function flatcombine,flatlisfile,mode
   endif
   readcol,flatlisfile,flatlis,f='(A)',/silent
   print,n_elements(flatlis),' flat images to stupidly combine...'
-  im = mrdfits(flatlis[0],/silent,/dscale)
+  im = mrdfits(flatlis[0],/silent,/dscale) - bias
   ;normalize first, then add to stack
   if mode eq 'mean' then im = im/mean(im,/nan,/double) else $
   if mode eq 'median' then im = im/median(im)
   for n=1L,n_elements(flatlis)-1 do begin
-     im_tmp = mrdfits(flatlis[n],/silent,/dscale) 
+     im_tmp = mrdfits(flatlis[n],/silent,/dscale) - bias
      if mode eq 'mean' then im = im + im_tmp/mean(im_tmp,/double,/nan) else $
      if mode eq 'median' then im = im + im_tmp/median(im_tmp)
   endfor
@@ -93,7 +93,7 @@ function flatcombine,flatlisfile,mode
   return,im
 end
 
-function zerocombine,flatlisfile
+function zerocombine,flatlisfile,dark=dark
   readcol,flatlisfile,flatlis,f='(A)',/silent
   print,n_elements(flatlis),' bias images to stupidly combine'
   im = mrdfits(flatlis[0],/silent,/dscale)
@@ -103,7 +103,8 @@ function zerocombine,flatlisfile
      im = im + im_tmp
   endfor
   im = im/float(n_elements(flatlis))
-  writefits,'zero.fits',im
+  if not keyword_set(dark) then writefits,'zero.fits',im
+  if keyword_set(dark) then writefits,'dark.fitz',im
   print,'> ZEROCOMBINE stats:'
   print,'    median = ',median(im)
   print,'    mean   = ',mean(im)
@@ -241,20 +242,31 @@ endif
 ;-- optionally combine the darks/biases/flats
 ;   NOTE: does not require imagelist to be defined!
 bias = 0d0
-if keyword_set(biaslist) and not keyword_set(darklist) and not keyword_set(donedark) then begin
+if keyword_set(biaslist) and not keyword_set(donebias) then begin
    print,'COMBINING BIASES... BE PATIENT'
    bias = zerocombine(biaslist)
 endif
+if keyword_set(donebias) then bias = mrdfits(donebias,0,/silent,/dscale)
+
+dark = 0d0
 if keyword_set(darklist) and not keyword_set(donedark) then begin
    print,'COMBINING DARKS... BE PATIENT'
-   bias = zerocombine(darklist)
+   dark = zerocombine(darklist,/dark)
 endif
-if keyword_set(donedark) then bias = mrdfits(donedark,0,/silent,/dscale)
+if keyword_set(donedark) then dark = mrdfits(donedark,0,/silent,/dscale)
+
+if keyword_set(darklist) or keyword_set(donedark) then begin
+   print,'NOTE: SIMPLEPHOT is not using darks right now, '
+   print,' but I will happily combine them for you...'
+   print,'You can sneak around this by manually handing the combined'
+   print,' dark.fits as the "donebias" and re-running'
+endif
+
 
 flat = 1d0
 if keyword_set(flatlist) and not keyword_set(doneflat) then begin
    print,'COMBINING FLATS... BE PATIENT'
-   flat = flatcombine(flatlist)
+   flat = flatcombine(flatlist, bias)
 endif
 if keyword_set(doneflat) then flat = mrdfits(doneflat,0,/silent,/dscale)
 
