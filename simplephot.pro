@@ -104,7 +104,7 @@ function zerocombine,flatlisfile,dark=dark
   endfor
   im = im/float(n_elements(flatlis))
   if not keyword_set(dark) then writefits,'zero.fits',im
-  if keyword_set(dark) then writefits,'dark.fitz',im
+  if keyword_set(dark) then writefits,'dark.fits',im
   print,'> ZEROCOMBINE stats:'
   print,'    median = ',median(im)
   print,'    mean   = ',mean(im)
