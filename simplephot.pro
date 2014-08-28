@@ -453,8 +453,8 @@ if keyword_set(gaussian) then begin
 endif
 
 
-;compmag = alog10(total(10d0^(outmag[*,1:*]),2))
-compmag = outmag[*,1]
+compmag = alog10(total(10d0^(outmag[*,1:*]),2))
+;compmag = outmag[*,1]
 
 ploterror, (timeout-min(timeout))*24., psym=6, /ysty,$
            (outmag[*,0]) - compmag, outerr[*,0], $
