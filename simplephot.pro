@@ -64,7 +64,7 @@
 ;     - mean profile = stddev
 ;     - FWHM = 2.35*stddev
 
-function flatcombine,flatlisfile, bias mode=mode
+function flatcombine,flatlisfile, bias, mode=mode
   if not keyword_set(mode) then mode = 'median'
   if mode ne 'median' and mode ne 'mean' then begin
      print,'ERROR: invalid mode. Stupidly using "median" now'
@@ -172,7 +172,8 @@ end
 
 pro simplephot,imagelist,display=display,ncomp=ncomp,reduce=reduce,$
                flatlist=flatlist,biaslist=biaslist,darklist=darklist,$
-               doneflat=doneflat,donedark=donedark,coord=coord,gaussian=gaussian
+               doneflat=doneflat,donebias=donebias,donedark=donedark,$
+               coord=coord,gaussian=gaussian
 
 print,'STARTING SIMPLEPHOT'
 print,'.. a time series photometry wrapper by James Davenport ..'
