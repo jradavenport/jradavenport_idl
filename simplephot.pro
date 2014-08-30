@@ -170,10 +170,10 @@ end
 ;-=-=-=-=-=-;-=-=-=-=-=-;-=-=-=-=-=-;-=-=-=-=-=-
 
 
-pro simplephot,imagelist,display=display,ncomp=ncomp,reduce=reduce,$
-               flatlist=flatlist,biaslist=biaslist,darklist=darklist,$
-               doneflat=doneflat,donebias=donebias,donedark=donedark,$
-               coord=coord,gaussian=gaussian
+pro simplephot,imagelist, display=display, ncomp=ncomp, reduce=reduce,$
+               flatlist=flatlist, biaslist=biaslist, darklist=darklist,$
+               doneflat=doneflat, donebias=donebias, donedark=donedark,$
+               coord=coord, gaussian=gaussian
 
 print,'STARTING SIMPLEPHOT'
 print,'.. a time series photometry wrapper by James Davenport ..'
@@ -484,8 +484,6 @@ print,''
 endif
 print,'  goodbye'
 
-
- stop
 
 return
 end
