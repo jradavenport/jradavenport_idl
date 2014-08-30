@@ -56,13 +56,8 @@
 ;-
 
 ; ---to do----
-; - if target star isnt recovered properly in search box, reset coords 
-; - make output cleaner
-; - save all guassfit stuff 
-; - estimate FWHM from the first image...
-;     - measure gaussian after user clicks target star
-;     - mean profile = stddev
-;     - FWHM = 2.35*stddev
+;    - add logfile output
+;    - add coord input for entire run
 
 function flatcombine,flatlisfile, bias, mode=mode
   if not keyword_set(mode) then mode = 'median'
@@ -118,7 +113,9 @@ end
 pro resetcoords_man,img,ncomp,xx,yy
   im = mrdfits(img,0,/silent,/dscale)
   imsz = size(im)
-  cubehelix
+;  cubehelix
+
+  loadct,5,/silent              ; STD GAMMA-II
   plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
   tvimage,(smooth(im,[1,1],/edge,/nan)),position=[.1,.1,.95,.95]
   print,'> select target'
@@ -365,7 +362,8 @@ for n=0L,nimage-1 do begin
    imsz = size(im)
 
    if keyword_set(display) then begin
-      cubehelix
+;      cubehelix
+      loadct,5,/silent ; STD GAMMA-II
       plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,$
            /nodata,position=[.1,.1,.95,.95],$
            xtitle='X (pixel)',ytitle='Y (pixel)',title=images[n]
