@@ -27,7 +27,7 @@
 ;        donedark - string name of combined dark image to use
 ;
 ;        coord - string name of file containing X,Y coordinates for
-;                stars to analyze. The first star must be the target
+;                stars to analyze. 
 ;                If used, SIMPLEPHOT will not prompt for target
 ;                identification.
 ;
@@ -185,7 +185,7 @@ compile_opt defint32, strictarr, strictarrsubs
 ; suppress some outputs
 compile_opt HIDDEN
 
-On_error,2
+;On_error,2
 ;; if n_params() lt 1 then begin
 ;;    print,'Error: need to include image list as a string'
     print,'SIMPLEPHOT, "imagelist", /display, ncomp=ncomp, flatlist="flatlist", biaslist="biaslist", darklist="darklist", doneflat = "doneflat", donedark = "donedark", /reduce, /gaussian, coord="coord"'
@@ -274,215 +274,239 @@ if keyword_set(imagelist) then begin
 ;-- this is how you reduce data from raw
    im = (im - bias)/flat
 
-loadct,0,/silent
+   loadct,0,/silent
 
-if not keyword_set(coord) or keyword_set(display) then begin
-   window,0,xsize=800,ysize=800,title='SIMPLEPHOT'
-   plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
-   tvimage,(smooth(im,[1,1],/edge,/nan)),position=[.1,.1,.95,.95]
+   if not keyword_set(coord) or keyword_set(display) then begin
+      window,0,xsize=800,ysize=800,title='SIMPLEPHOT'
+      plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
+      tvimage,(smooth(im,[1,1],/edge,/nan)),position=[.1,.1,.95,.95]
+      
+      print,''
+      print,n_elements(images),' images to process...'
+      print,''
+      print,'> re-size your window if desired, then click anywhere in the window'
+      print,''
+      clkx = 1
+      clky = 1
+      
+      CURSOR,clkx,clky,/down,/data
+   endif
 
-   print,''
-   print,n_elements(images),' images to process...'
-   print,''
-   print,'> re-size your window if desired, then click anywhere in the window'
-   print,''
-   clkx = 1
-   clky = 1
-
-   CURSOR,clkx,clky,/down,/data
-endif
-
-if not keyword_set(coord) then begin
+   if not keyword_set(coord) then begin
    ;cubehelix
-   loadct,5,/silent ; STD GAMMA-II
-   plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
-   tvimage,smooth(im,[5,5],/edge,/nan),position=[.1,.1,.95,.95]
-   print,''
-   
-   find,im,xtmp,ytmp,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3., fwhm ,roundlim, sharplim,/monitor,/silent
-   loadct,39,/silent ; RAINBOW
-   oplot,xtmp,ytmp,psym=6,color=150,thick=5
-   
-   print,'> select target star'
-   x1=1
-   y1=1
-   CURSOR,x1,y1,/down,/data
-   oplot,COS(FINDGEN(17) * (!PI*2/16.))*10+x1, SIN(FINDGEN(17) * (!PI*2/16.))*10+y1,color=250,thick=4
-   print,''
+      loadct,5,/silent          ; STD GAMMA-II
+      plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
+      tvimage,smooth(im,[5,5],/edge,/nan),position=[.1,.1,.95,.95]
+      print,''
+      
+      find,im,xtmp,ytmp,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3., fwhm ,roundlim, sharplim,/monitor,/silent
+      loadct,39,/silent         ; RAINBOW
+      oplot,xtmp,ytmp,psym=6,color=150,thick=5
+      
+      print,'> select target star'
+      x1=1
+      y1=1
+      CURSOR,x1,y1,/down,/data
+      oplot,COS(FINDGEN(17) * (!PI*2/16.))*10+x1, SIN(FINDGEN(17) * (!PI*2/16.))*10+y1,color=250,thick=4
+      print,''
 ;==============
-   xc = 0
-   yc = 0
-   for n=0L,ncomp-1 do begin
-      print,'> select comparison ',strtrim(string(n+1),2)
-      xx=1
-      yy=1
+      xc = 0
+      yc = 0
+      for n=0L,ncomp-1 do begin
+         print,'> select comparison ',strtrim(string(n+1),2)
+         xx=1
+         yy=1
+         
+         CURSOR,xx,yy,/down,/data
+         xc = [xc,xx]
+         yc = [yc,yy]
+         
+         oplot,COS(FINDGEN(17) * (!PI*2/16.))*10+xx, SIN(FINDGEN(17) * (!PI*2/16.))*10+yy,color=200,thick=4
+      endfor
+      remove,0,xc,yc
       
-      CURSOR,xx,yy,/down,/data
-      xc = [xc,xx]
-      yc = [yc,yy]
+      xx = [x1,xc]              ; the target and the comparison stars
+      yy = [y1,yc]
       
-      oplot,COS(FINDGEN(17) * (!PI*2/16.))*10+xx, SIN(FINDGEN(17) * (!PI*2/16.))*10+yy,color=200,thick=4
-   endfor
-   remove,0,xc,yc
-
-   xx = [x1,xc]  ; the target and the comparison stars
-   yy = [y1,yc]
+                                ; dump a coord file for later use!
+      openw,7,imagelist+'.coord'
+      for v=0l,ncomp do $
+         printf,7,xx[v],yy[v]
+      close,7
+   endif
+   if keyword_set(coord) then readcol,coord,xx,yy,f='(F)',/silent
+   ncomp = n_elements(xx)-1.
    
-   ; dump a coord file for later use!
-   openw,7,imagelist+'.coord'
-   for v=0l,ncomp do $
-      printf,7,xx[v],yy[v]
-   close,7
-endif 
-if keyword_set(coord) then readcol,coord,xx,yy,f='(F)',/silent
-ncomp = n_elements(xx)-1.
-
 ; now primary loop
-outmag = fltarr(n_elements(images),ncomp+1)-99.
-outerr = fltarr(n_elements(images),ncomp+1)-99.
-timeout = dblarr(n_elements(images)) - 99.d0
-gflux =  fltarr(n_elements(images),ncomp+1)-1.
-gferr =  fltarr(n_elements(images),ncomp+1)-1.
-fwhmout = dblarr(n_elements(images))
+   outmag = fltarr(n_elements(images),ncomp+1)-99.
+   outerr = fltarr(n_elements(images),ncomp+1)-99.
+   timeout = dblarr(n_elements(images)) - 99.d0
+   gflux =  fltarr(n_elements(images),ncomp+1)-1.
+   gferr =  fltarr(n_elements(images),ncomp+1)-1.
+   fwhmout = dblarr(n_elements(images))
 
    tmparr = '(A, A, D, '
    for v=0L,2.*ncomp do tmparr = tmparr+'D,'
-
-close,/all
-openw,1,imagelist+'.out'
-nimage = n_elements(images)
-
-for n=0L,nimage-1 do begin
+   
+   close,/all
+   openw,1,imagelist+'.out'
+   nimage = n_elements(images)
+   
+   for n=0L,nimage-1 do begin
 ;   run find,aper,extract time
-   print,n,' / ',nimage-1
-   im = (mrdfits(images[n],0,hdr,/silent,/dscale) - bias) / flat
-   if keyword_set(reduce) then writefits,'reduced_'+images[n],im,hdr
-
-   Time = sxpar(hdr,timekey)
-   imsz = size(im)
-
-   if keyword_set(display) then begin
+      print,images[n],' ', n,' / ',nimage-1
+      im = (mrdfits(images[n],0,hdr,/silent,/dscale) - bias) / flat
+      if keyword_set(reduce) then writefits,'reduced_'+images[n],im,hdr
+      
+      Time = sxpar(hdr,timekey)
+      imsz = size(im)
+      
+      if keyword_set(display) then begin
 ;      cubehelix
-      loadct,5,/silent ; STD GAMMA-II
-      plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,$
-           /nodata,position=[.1,.1,.95,.95],$
-           xtitle='X (pixel)',ytitle='Y (pixel)',title=images[n]
-      tvimage,im,position=[.1,.1,.95,.95]
-   endif
-
+         loadct,39,/silent
+         plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,$
+              /nodata,position=[.1,.1,.95,.95],$
+              xtitle='X (pixel)',ytitle='Y (pixel)',title=images[n]
+         loadct,5,/silent       ; STD GAMMA-II
+         tvimage,im,position=[.1,.1,.95,.95]
+      endif
+      
 ; find and phot
-   find,im,xf,yf,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3.,$
-        fwhm ,roundlim, sharplim,/monitor,/silent
+      find,im,xf,yf,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3.,$
+           fwhm ,roundlim, sharplim,/monitor,/silent
    ;; aper,im,xf,yf,mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
 
 
-   for i=0L,ncomp do begin
-      mt = where(xf gt xx[i]-smbox and xf lt xx[i]+smbox and $
-                 yf gt yy[i]-smbox and yf lt yy[i]+smbox)
+      for i=0L,ncomp do begin
+         mt = where(xf gt xx[i]-smbox and xf lt xx[i]+smbox and $
+                    yf gt yy[i]-smbox and yf lt yy[i]+smbox)
+         
 ; just choose the first match, if any
-      if mt[0] ne -1 then begin
-         xx[i] = xf[mt[0]] ; update coords
-         yy[i] = yf[mt[0]]
-      endif
-      
+         if mt[0] ne -1 then begin
+            xx[i] = xf[mt[0]]   ; update coords
+            yy[i] = yf[mt[0]]
+         endif
+         
 ; -- update: even if find DIDNT fid the right stars, still run aper on
 ;    the last known position
-      aper,im,xx[i],yy[i],mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
-      outmag[n,i] = mag
-      outerr[n,i] = err
-
+         aper,im,xx[i],yy[i],mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
+         outmag[n,i] = mag
+         outerr[n,i] = err
+         
 ; play with fitting a 2D gaussian to each star
 ; these fit coefficients could be useful later on!
-      tmpcoord = [(xx[i]-5*fwhm),(xx[i]+5*fwhm),(yy[i]-5*fwhm),(yy[i]+5*fwhm)]
-      if tmpcoord[0] lt 0 then tmpcoord[0] = 0
-      if tmpcoord[2] lt 0 then tmpcoord[2] = 0
-      if tmpcoord[1] ge imsz[1] then tmpcoord[1] = imsz[1]
-      if tmpcoord[3] ge imsz[2] then tmpcoord[3] = imsz[2]
-
-      imtest = im[tmpcoord[0]:tmpcoord[1],tmpcoord[2]:tmpcoord[3]]
-      gtest = GAUSS2DFIT(imtest,Atest, /tilt)      
-      gflux[n,i] = total(gtest-atest[0])
-      gferr[n,i] = sqrt(mean((gtest-imtest)^2.)) 
-
-      if keyword_set(display) then begin
-         loadct,39,/silent
-         oplot,xx,yy,psym=6,color=150,thick=3
-         wait,.1
+         tmpcoord = [(xx[i]-5.*fwhm),(xx[i]+5.*fwhm),(yy[i]-5.*fwhm),(yy[i]+5.*fwhm)]
+         if tmpcoord[0] lt 0 then tmpcoord[0] = 0
+         if tmpcoord[2] lt 0 then tmpcoord[2] = 0
+         if tmpcoord[1] ge imsz[1] then tmpcoord[1] = imsz[1]
+         if tmpcoord[3] ge imsz[2] then tmpcoord[3] = imsz[2]
+         
+         imtest = im[tmpcoord[0]:tmpcoord[1],tmpcoord[2]:tmpcoord[3]]
+         gtest = GAUSS2DFIT(imtest,Atest, /tilt)      
+         gflux[n,i] = total(gtest-Atest[0])
+         gferr[n,i] = sqrt(mean((gtest-imtest)^2.)) 
+         
+         
+         xx[i] = xx[i]-5.*fwhm + Atest[4]
+         yy[i] = yy[i]-5.*fwhm + Atest[5]
+         
+         if keyword_set(display) then begin
+            loadct,39,/silent
+            oplot,[xx[i]],[yy[i]],psym=6,color=150,thick=3
+            wait,.2
+         endif
+      endfor
+      
+      
+      if n gt 1 then begin
+         if total(gflux[n,*]) lt total(gflux[n-1,*])/2. then begin
+            print,"OH NO! Stars aren't where they should be..."
+            resetcoords_man,images[n],ncomp,xx,yy
+            
+            for i=0L,ncomp do begin
+               APER,im,xx[i],yy[i],mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
+               outmag[n,i] = mag
+               outerr[n,i] = err
+               tmpcoord = [(xx[i]-5.*fwhm),(xx[i]+5.*fwhm),(yy[i]-5.*fwhm),(yy[i]+5.*fwhm)]
+               if tmpcoord[0] lt 0 then tmpcoord[0] = 0
+               if tmpcoord[2] lt 0 then tmpcoord[2] = 0
+               if tmpcoord[1] ge imsz[1] then tmpcoord[1] = imsz[1]
+               if tmpcoord[3] ge imsz[2] then tmpcoord[3] = imsz[2]
+               imtest = im[tmpcoord[0]:tmpcoord[1],tmpcoord[2]:tmpcoord[3]]
+               gtest = GAUSS2DFIT(imtest,Atest, /tilt)      
+               gflux[n,i] = total(gtest-Atest[0])
+               gferr[n,i] = sqrt(mean((gtest-imtest)^2.)) 
+               xx[i] = xx[i]-5.*fwhm + Atest[4]
+               yy[i] = yy[i]-5.*fwhm + Atest[5]
+            endfor
+         endif
       endif
+      
+                                ;-- date format set up for YYYY-MM-DDTHH:MM:SS
+      yr = strmid(time,0,4)
+      mo = strmid(time,5,2)
+      dd = strmid(time,8,2)
+      hh = strmid(time,11,2)
+      mi = strmid(time,14,2)
+      ss = strmid(time,17,2)
+      timeout[n] = julday(mo,dd,yr,hh,mi,ss) ;- 2400000.5d0
+      
+      fwhmout[n] = (atest[2]+atest[3])/2.
+      
+      printf,1,f=tmparr+'D)',images[n],time,timeout[n], $
+             [transpose(outmag[n,*]),transpose(outerr[n,*])]
    endfor
-
-   if total(gflux[n,*]) le 0 then begin
-      print,"OH NO! Stars aren't where they should be..."
-      resetcoords_man,images[n],ncomp,xx,yy
-   ;;    resetcoords,images[n],ncomp,xx,yy
-
-       for i=0L,ncomp do begin
-          APER,im,xx[i],yy[i],mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
-          outmag[n,i] = mag
-          outerr[n,i] = err
-       endfor
-   endif
-
-   ;-- date format set up for YYYY-MM-DDTHH:MM:SS
-   yr = strmid(time,0,4)
-   mo = strmid(time,5,2)
-   dd = strmid(time,8,2)
-   hh = strmid(time,11,2)
-   mi = strmid(time,14,2)
-   ss = strmid(time,17,2)
-   timeout[n] = julday(mo,dd,yr,hh,mi,ss) ;- 2400000.5d0
-
-   fwhmout[n] = (atest[2]+atest[3])/2.
-
-   printf,1,f=tmparr+'D)',images[n],time,timeout[n], $
-          [transpose(outmag[n,*]),transpose(outerr[n,*])]
-endfor
-close,1
-
-
-if keyword_set(gaussian) then begin
-   openw,2,imagelist+'_gflux.out'
-   printf,2,transpose(gflux)
-   close,2
+   close,1
    
-   openw,3,imagelist+'_gferr.out'
-   printf,3,transpose(gferr)
-   close,3 
-endif
-
-
-compmag = alog10(total(10d0^(outmag[*,1:*]),2))
-;compmag = outmag[*,1]
-
-ploterror, (timeout-min(timeout))*24., psym=6, /ysty,$
-           (outmag[*,0]) - compmag, outerr[*,0], $
-           ytitle='delta Mag (target - comp1)', xtitle='delta Time (hours)',$
-           yrange=[max((outmag[*,0]) - outmag[*,1]),$
-                   min((outmag[*,0]) - outmag[*,1])],$
-           title='Aperture Phot',charsize=1.4
-
-if keyword_set(gaussian) then begin
-   ploterror,(timeout - min(timeout))*24., $
-             gflux[*,0]/(total(gflux[*,1:*],2)),$
-             gferr[*,0]/(total(gflux[*,1:*],2)),$
-             psym=4,/ysty,xtitle='time (hours)',$
-             ytitle='flux ratio [target / sum(comps)]',$
-             title='Gaussian',/xsty,charsize=1.4
-endif
-
-
-
+   
+   if keyword_set(gaussian) then begin
+      openw,2,imagelist+'_gflux.out'
+      printf,2,transpose(gflux)
+      close,2
+      
+      openw,3,imagelist+'_gferr.out'
+      printf,3,transpose(gferr)
+      close,3 
+   endif
+   
+   
+;compmag = alog10(total(10d0^(outmag[*,1:*]),2))
+   compmag = outmag[*,1]
+   
+   ploterror, (timeout-min(timeout))*24., psym=6, /ysty,$
+              (outmag[*,0]) - compmag, outerr[*,0], $
+              ytitle='delta Mag (target - comp1)', xtitle='delta Time (hours)',$
+              yrange=[max((outmag[*,0]) - outmag[*,1]),$
+                      min((outmag[*,0]) - outmag[*,1])],$
+              title='Aperture Phot',charsize=1.4
+   
+   if keyword_set(gaussian) then begin
+      ploterror,(timeout - min(timeout))*24., $
+                gflux[*,0]/(total(gflux[*,1:*],2)),$
+                gferr[*,0]/(total(gflux[*,1:*],2)),$
+                psym=4,/ysty,xtitle='time (hours)',$
+                ytitle='flux ratio [target / sum(comps)]',$
+                title='Gaussian',/xsty,charsize=1.4
+      
+      oplot,(timeout - min(timeout))*24., $
+            gflux[*,1]/gflux[*,2],color=50
+   endif
+   
+   
+   
 ;; forprint,textout=imagelist+'gflux_lc.dat',timeout,(gflux[*,0]-(total(gflux[*,1:*],2)))/(total(gflux[*,1:*],2)),/nocomm,f='(D,D,D)'
 
 
-print,'DONE>>>>'
-print,'>> The file of output results: ',imagelist+'.out'
-print,''
-
+   print,'DONE>>>>'
+   print,'>> The file of output results: ',imagelist+'.out'
+   print,''
+   
 endif
-print,'  goodbye'
 
 
+print,'>  goodbye'
+
+stop
 return
 end
 
