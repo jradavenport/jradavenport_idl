@@ -117,7 +117,7 @@ pro resetcoords_man,img,ncomp,xx,yy
 
   loadct,5,/silent              ; STD GAMMA-II
   plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
-  tvimage,(smooth(im,[1,1],/edge,/nan)),position=[.1,.1,.95,.95]
+  tvimage,(im),position=[.1,.1,.95,.95]
   print,'> select target'
   print,'> (green boxes indicate stars auto-found by FIND)'
   x1=1
@@ -208,9 +208,9 @@ if keyword_set(imagelist) then begin
    endif
    
    print,''
-   if not keyword_set(APERTURE) then APERTURE = 15. ; for ap phot
-   if not keyword_set(SKYY) then SKYY = [28,38]     ; inner and outer rad
-   if not keyword_set(SMBOX) then SMBOX = 15 ; search box side length to match each frame over
+   if not keyword_set(APERTURE) then APERTURE = 5. ; for ap phot
+   if not keyword_set(SKYY) then SKYY = [20,50]     ; inner and outer rad
+   if not keyword_set(SMBOX) then SMBOX = 15. ; search box side length to match each frame over
    if not keyword_set(FWHM) then FWHM = 5.   ; approx FWHM
    
    timekey = 'DATE-OBS'         ; 'UTCSTAMP'
@@ -277,9 +277,9 @@ if keyword_set(imagelist) then begin
    loadct,0,/silent
 
    if not keyword_set(coord) or keyword_set(display) then begin
-      window,0,xsize=800,ysize=800,title='SIMPLEPHOT'
+      window,0,xsize=750,ysize=750,title='SIMPLEPHOT'
       plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
-      tvimage,(smooth(im,[1,1],/edge,/nan)),position=[.1,.1,.95,.95]
+      tvimage,im,position=[.1,.1,.95,.95]
       
       print,''
       print,n_elements(images),' images to process...'
@@ -296,7 +296,7 @@ if keyword_set(imagelist) then begin
    ;cubehelix
       loadct,5,/silent          ; STD GAMMA-II
       plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
-      tvimage,smooth(im,[5,5],/edge,/nan),position=[.1,.1,.95,.95]
+      tvimage,im,position=[.1,.1,.95,.95]
       print,''
       
       find,im,xtmp,ytmp,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3., fwhm ,roundlim, sharplim,/monitor,/silent
@@ -344,6 +344,8 @@ if keyword_set(imagelist) then begin
    gflux =  fltarr(n_elements(images),ncomp+1)-1.
    gferr =  fltarr(n_elements(images),ncomp+1)-1.
    fwhmout = dblarr(n_elements(images))
+   xout = fltarr(n_elements(images), ncomp+1)
+   yout = fltarr(n_elements(images), ncomp+1)
 
    tmparr = '(A, A, D, '
    for v=0L,2.*ncomp do tmparr = tmparr+'D,'
@@ -371,44 +373,39 @@ if keyword_set(imagelist) then begin
          tvimage,im,position=[.1,.1,.95,.95]
       endif
       
-; find and phot
-      find,im,xf,yf,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3.,$
-           fwhm ,roundlim, sharplim,/monitor,/silent
-   ;; aper,im,xf,yf,mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
+ ; find and phot
+      ;; find,im,xf,yf,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3.,$
+      ;;      fwhm ,roundlim, sharplim,/monitor,/silent
+      ;; aper,im,xf,yf,mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
 
-
-      for i=0L,ncomp do begin
-         mt = where(xf gt xx[i]-smbox and xf lt xx[i]+smbox and $
-                    yf gt yy[i]-smbox and yf lt yy[i]+smbox)
-         
-; just choose the first match, if any
-         if mt[0] ne -1 then begin
-            xx[i] = xf[mt[0]]   ; update coords
-            yy[i] = yf[mt[0]]
-         endif
-         
-; -- update: even if find DIDNT fid the right stars, still run aper on
-;    the last known position
-         aper,im,xx[i],yy[i],mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
-         outmag[n,i] = mag
-         outerr[n,i] = err
-         
+      for i=0L,ncomp do begin         
 ; play with fitting a 2D gaussian to each star
 ; these fit coefficients could be useful later on!
-         tmpcoord = [(xx[i]-5.*fwhm),(xx[i]+5.*fwhm),(yy[i]-5.*fwhm),(yy[i]+5.*fwhm)]
+         gbox = 3.*fwhm
+         tmpcoord = [(xx[i]-gbox),(xx[i]+gbox),$
+                     (yy[i]-gbox),(yy[i]+gbox)]
          if tmpcoord[0] lt 0 then tmpcoord[0] = 0
+         if tmpcoord[1] lt 0 then tmpcoord[1] = imsz[1]
          if tmpcoord[2] lt 0 then tmpcoord[2] = 0
+         if tmpcoord[3] lt 0 then tmpcoord[3] = imsz[1]
+         if tmpcoord[0] ge imsz[1] then tmpcoord[0] = 0
          if tmpcoord[1] ge imsz[1] then tmpcoord[1] = imsz[1]
-         if tmpcoord[3] ge imsz[2] then tmpcoord[3] = imsz[2]
+         if tmpcoord[2] ge imsz[1] then tmpcoord[2] = 0
+         if tmpcoord[3] ge imsz[1] then tmpcoord[3] = imsz[1]
          
          imtest = im[tmpcoord[0]:tmpcoord[1],tmpcoord[2]:tmpcoord[3]]
-         gtest = GAUSS2DFIT(imtest,Atest, /tilt)      
+         gtest = GAUSS2DFIT(imtest,Atest, /tilt)
          gflux[n,i] = total(gtest-Atest[0])
          gferr[n,i] = sqrt(mean((gtest-imtest)^2.)) 
          
          
-         xx[i] = xx[i]-5.*fwhm + Atest[4]
-         yy[i] = yy[i]-5.*fwhm + Atest[5]
+         xx[i] = xx[i]-gbox + Atest[4]
+         yy[i] = yy[i]-gbox + Atest[5]
+         
+         aper,im,xx[i],yy[i],mag,err,sky,skyerr,1,APERTURE,SKYY,$
+              readnoise=1,/silent,/nan
+         outmag[n,i] = mag
+         outerr[n,i] = err
          
          if keyword_set(display) then begin
             loadct,39,/silent
@@ -424,10 +421,7 @@ if keyword_set(imagelist) then begin
             resetcoords_man,images[n],ncomp,xx,yy
             
             for i=0L,ncomp do begin
-               APER,im,xx[i],yy[i],mag,err,sky,skyerr,1,APERTURE,SKYY,readnoise=1,/silent,/nan
-               outmag[n,i] = mag
-               outerr[n,i] = err
-               tmpcoord = [(xx[i]-5.*fwhm),(xx[i]+5.*fwhm),(yy[i]-5.*fwhm),(yy[i]+5.*fwhm)]
+               tmpcoord = [(xx[i]-gbox),(xx[i]+gbox),(yy[i]-gbox),(yy[i]+gbox)]
                if tmpcoord[0] lt 0 then tmpcoord[0] = 0
                if tmpcoord[2] lt 0 then tmpcoord[2] = 0
                if tmpcoord[1] ge imsz[1] then tmpcoord[1] = imsz[1]
@@ -436,13 +430,18 @@ if keyword_set(imagelist) then begin
                gtest = GAUSS2DFIT(imtest,Atest, /tilt)      
                gflux[n,i] = total(gtest-Atest[0])
                gferr[n,i] = sqrt(mean((gtest-imtest)^2.)) 
-               xx[i] = xx[i]-5.*fwhm + Atest[4]
-               yy[i] = yy[i]-5.*fwhm + Atest[5]
-            endfor
+               xx[i] = xx[i]-gbox + Atest[4]
+               yy[i] = yy[i]-gbox + Atest[5]
+
+               APER,im,xx[i],yy[i],mag,err,sky,skyerr,1,APERTURE,SKYY,$
+                    readnoise=1,/silent,/nan
+               outmag[n,i] = mag
+               outerr[n,i] = err
+           endfor
          endif
       endif
       
-                                ;-- date format set up for YYYY-MM-DDTHH:MM:SS
+      ;-- date format set up for YYYY-MM-DDTHH:MM:SS
       yr = strmid(time,0,4)
       mo = strmid(time,5,2)
       dd = strmid(time,8,2)
@@ -472,7 +471,8 @@ if keyword_set(imagelist) then begin
    
 ;compmag = alog10(total(10d0^(outmag[*,1:*]),2))
    compmag = outmag[*,1]
-   
+   loadct,39,/silent
+
    ploterror, (timeout-min(timeout))*24., psym=6, /ysty,$
               (outmag[*,0]) - compmag, outerr[*,0], $
               ytitle='delta Mag (target - comp1)', xtitle='delta Time (hours)',$
@@ -481,15 +481,16 @@ if keyword_set(imagelist) then begin
               title='Aperture Phot',charsize=1.4
    
    if keyword_set(gaussian) then begin
-      ploterror,(timeout - min(timeout))*24., $
-                gflux[*,0]/(total(gflux[*,1:*],2)),$
-                gferr[*,0]/(total(gflux[*,1:*],2)),$
-                psym=4,/ysty,xtitle='time (hours)',$
-                ytitle='flux ratio [target / sum(comps)]',$
-                title='Gaussian',/xsty,charsize=1.4
-      
-      oplot,(timeout - min(timeout))*24., $
-            gflux[*,1]/gflux[*,2],color=50
+      gplotout = -2.5*alog10(gflux[*,0]/(total(gflux[*,1:*],2)/ncomp))
+      gtimeout = timeout
+      gplotout = gplotout[sort(gtimeout)]
+      gtimeout = gtimeout[sort(gtimeout)]
+      plot,(gtimeout - gtimeout[0])*24., $
+           gplotout,$
+           psym=4,/ysty,xtitle='time (hours)',$
+           ytitle='delta Mag [target / sum(comps)]',$
+           title='Gaussian',/xsty,charsize=1.4,$
+           yrange=maxmin(gplotout)*[1.02,0.98]
    endif
    
    
