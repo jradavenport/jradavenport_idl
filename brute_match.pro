@@ -12,11 +12,10 @@
 ; CALLING SEQUENCE: brute_match,x1,y1,x2,y2,m1,m2,rad[,nxbin=nxbin,
 ;                   nybin=nybin,no_switch=no_switch]
 ;
-; INPUTS: x1,y1,x2,y2
+; INPUTS: x1,y1,x2,y2 =
 ;         Coordinates of 2 data sets to be matched.
 ;
-;         rad
-;         Radius to search over for each star.
+;         rad = Radius to search over for each star.
 ;
 ; OPTIONAL INPUTS:
 ;         NXBIN = the number of sub-bins in the X axis
