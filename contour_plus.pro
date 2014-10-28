@@ -216,7 +216,8 @@ for i=0L,n_elements(keep)-1L do begin
       else low=[low,ri[ri[k]:ri[k+1]-1]]
 endfor
 ; This code was modified from JD Smith's HISTOGRAM tutorial
-; http://www.dfanning.com/tips/histogram_tutorial.html
+; http://www.idlcoyote.com/tips/histogram_tutorial.html
+; formerlly http://www.dfanning.com/tips/histogram_tutorial.html
 ;============================================================
 
 if not keyword_set(psym) then psym=3
