@@ -98,8 +98,8 @@ compile_opt HIDDEN
 
   if total(h1 ge 1 and h2 ge 1) eq 0 then begin
      print,'BRUTE_MATCH failed! Fields do not overlap.'
-     m1 = -1
-     m2 = -1
+     m1o = -1
+     m2o = -1
      return
   endif
 
@@ -163,7 +163,7 @@ rng1 = where( x1 ge k*xbin+xbin0 and x1 le (k+1)*xbin+xbin0 and $
 ; search radius on all sides to allow objects near the seams to match
 rng2 = where(x2 ge k*xbin+xbin0-rad and x2 le (k+1)*xbin+xbin0+rad and $
              y2 ge h*ybin+ybin0-rad and y2 le (h+1)*ybin+ybin0+rad)
-             
+
 if rng1[0] ne -1 and rng2[0] ne -1 then begin
   x3 = x1[rng1] ; shorter
   x4 = x2[rng2] ; longer
