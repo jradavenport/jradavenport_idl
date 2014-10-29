@@ -163,22 +163,23 @@ rng1 = where( x1 ge k*xbin+xbin0 and x1 le (k+1)*xbin+xbin0 and $
 ; search radius on all sides to allow objects near the seams to match
 rng2 = where(x2 ge k*xbin+xbin0-rad and x2 le (k+1)*xbin+xbin0+rad and $
              y2 ge h*ybin+ybin0-rad and y2 le (h+1)*ybin+ybin0+rad)
-if rng1[0] eq -1 or rng2[0] eq -1 then goto,jumper
-x3 = x1[rng1] ; shorter
-x4 = x2[rng2] ; longer
-y3 = y1[rng1] ; shorter
-y4 = y2[rng2] ; longer
+             
+if rng1[0] ne -1 and rng2[0] ne -1 then begin
+  x3 = x1[rng1] ; shorter
+  x4 = x2[rng2] ; longer
+  y3 = y1[rng1] ; shorter
+  y4 = y2[rng2] ; longer
 
-;now search inside the sub-box, find matches
-FOR j=0L,n_elements(x3)-1 DO BEGIN
-   dist = sqrt((x3[j]-x4)^2.+(y3[j]-y4)^2.)
-   s = sort(dist)
-   if dist[s[0]] le rad then begin
-      m2 = [m2,rng2[s[0]]]
-      m1 = [m1,rng1[j]]
-   endif
-ENDFOR
-jumper:continue
+  ;now search inside the sub-box, find matches
+  FOR j=0L,n_elements(x3)-1 DO BEGIN
+    dist = sqrt((x3[j]-x4)^2.+(y3[j]-y4)^2.)
+    s = sort(dist)
+    if dist[s[0]] le rad then begin
+        m2 = [m2,rng2[s[0]]]
+        m1 = [m1,rng1[j]]
+      endif
+    ENDFOR
+endif
 
 
 ENDFOR
