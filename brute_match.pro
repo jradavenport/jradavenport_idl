@@ -108,6 +108,7 @@ compile_opt HIDDEN
 ; This uses histogram's reverse_indicies to run super fast
 ;       -----------> this is the magic! <---------
 keep = where(h1 gt 0 and h2 gt 0) ; keep big bins w/ stars in both datasets
+print, n_elements(keep), ' big bins overlap'
 for i=0L,n_elements(keep)-1L do begin
    k=keep[i]
    if r1[k+1] gt r1[k] then $
@@ -123,6 +124,8 @@ endfor
 ;============================================================
 
 ;-- now only use stars in these "low1" and "low2" indices
+print, 'Compressed matchable samples from ',n_elements(x1o),n_elements(x2o)
+print, 'down to ',n_elements(low1),n_elements(low2)
 x1 = x1o[low1]  &  y1 = y1o[low1]
 x2 = x2o[low2]  &  y2 = y2o[low2]
 ; NOTE: the reason I am not searching for matches within each bigbin
@@ -204,6 +207,6 @@ m2o = low2[m2] ; data that have matches!
 ;    x2=temporary(x0) & y2=temporary(y0)
 ; ENDIF
 
-
+print, 'BRUTE_MATCH returning ',n_elements(m1o),' matches'
 return
 end
