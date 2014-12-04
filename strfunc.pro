@@ -2,20 +2,21 @@ function strfunc,time,mag,log=log,bin=bin,dtime,dmag
 ;+
 ; NAME: STRFUNC
 ;
-; PURPOSE: Create the Structure Function of a lightcurve or other
-;          similar temporal set of data.
+; PURPOSE: Create the Structure Function of a light curve or other
+;          similar time series data.
 ;
 ;    STRFUNC.pro uses this equation for the Structure Function:
-;          SF(t) = sqrt(1/N(t) * sum(dmag(t)^2))
+;          SF(t) = sqrt( 1/N(t) * sum(dMag(t)^2) )
+;
 ;    This is done for all "N-squared" dTime & dMag measurements from
-;    the entire lightcurve. The Structure Function is returned for
+;    the entire light curve. The Structure Function is returned for
 ;    bins of dTime.
 ;
-; CALLING SEQUENCE: sf = STRFUNC(time,mag,[/log,bin=]
+; CALLING SEQUENCE: sf = STRFUNC(time, mag, [/log, bin=] )
 ;
 ; INPUTS:
 ;     TIME - the vector of time measurements
-;     MAG  - the vector of f(time) measurements
+;     MAG  - the vector of data, f(time) measurements
 ;
 ; OPTIONAL INPUTS:
 ;     BIN - the Delta-time bin to measure the SF at.
