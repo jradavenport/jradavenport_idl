@@ -126,7 +126,12 @@ return
 END
 ;==================================================================
 
-pro contour_plus,x,y,max_den,xbin=xbin,ybin=ybin,levels=levels,return_levels=return_levels,no_fill=no_fill,no_contour=no_contour,no_line=no_line,no_points=no_points,pixel=pixel,reverse=reverse,psym=psym,all_points=all_points, overplot=overplot,trimlevel=trimlevel,nlevels=nlevels,_extra = e,hist=hist
+pro contour_plus, x, y, max_den, xbin=xbin, ybin=ybin, levels=levels, $
+                  return_levels=return_levels, no_fill=no_fill,$
+                  no_contour=no_contour, no_line=no_line, no_points=no_points,$
+                  pixel=pixel, reverse=reverse, psym=psym, all_points=all_points,$
+                  overplot=overplot, trimlevel=trimlevel, nlevels=nlevels,$
+                  _extra = e,hist=hist
 
 ; set options for the compiler
 compile_opt defint32, strictarr, strictarrsubs
@@ -163,7 +168,8 @@ compile_opt HIDDEN
 
 ; parse up the data in a 2d histogram. use HIST_ND rather than HIST_2D
 ; for the reverse_indicies functionality
-hist = hist_nd(transpose([[x],[y]]),[xbin,ybin],min=[xmin,ymin],max=[xmax,ymax],REVERSE_INDICES=ri)
+  hist = hist_nd(transpose([[x],[y]]),[xbin,ybin],$
+                 min=[xmin,ymin],max=[xmax,ymax],REVERSE_INDICES=ri)
 
 ; FIX error when no data is within range, quit gracefully
 if total(hist) eq 0 then begin
@@ -186,7 +192,8 @@ yy = findgen(histsz[2])*ybin + ymin
 
 ; SOME DEFAULT CONTOUR LEVELS, MAYBE NOT WHAT YOU WANT...
 if not keyword_set(nlevels) then nlevels=8
-if not keyword_set(levels) then levels = lindgen(nlevels)^2.3*stddev(hist)/(nlevels*1.5)+max_den
+if not keyword_set(levels) then $
+   levels = lindgen(nlevels)^2.3*stddev(hist)/(nlevels*1.5)+max_den
 
 ;make sure there's a couple levels 
 if n_elements(levels) le 1 then begin
@@ -223,17 +230,28 @@ endfor
 if not keyword_set(psym) then psym=3
 
 ; NOT overplot
-if keyword_set(all_points) and not keyword_set(overplot) then plot,x,y,psym=psym,_extra=e
+if keyword_set(all_points) and not keyword_set(overplot) then $
+   plot,x,y,psym=psym,_extra=e
 
 
-if not keyword_set(no_points) and not keyword_set(all_points) and not keyword_set(overplot) then plot,x[low],y[low],_extra=e,psym=psym
+if not keyword_set(no_points) and $
+   not keyword_set(all_points) and $
+   not keyword_set(overplot) then $
+      plot,x[low],y[low],_extra=e,psym=psym
 
-if keyword_set(no_points) and not keyword_set(all_points) and not keyword_set(overplot) then plot,x,y,_extra=e,/nodata
+if keyword_set(no_points) and $
+   not keyword_set(all_points) and $
+   not keyword_set(overplot) then $
+      plot,x,y,_extra=e,/nodata
 ;------
 ; YES overplot
-if keyword_set(all_points) and  keyword_set(overplot) then oplot,x,y,psym=psym,_extra=e
+if keyword_set(all_points) and  keyword_set(overplot) then $
+   oplot,x,y,psym=psym,_extra=e
 
-if not keyword_set(no_points) and  not keyword_set(all_points) and  keyword_set(overplot) then oplot,x[low],y[low],_extra=e,psym=psym
+if not keyword_set(no_points) and $
+   not keyword_set(all_points) and $
+   keyword_set(overplot) then $
+      oplot,x[low],y[low],_extra=e,psym=psym
 
 ;------
 
@@ -253,7 +271,8 @@ if keyword_set(no_fill) then fillyn = 0
 if not keyword_set(no_contour) and not keyword_set(no_fill) then begin
  ; if you do want the FILLED contours
    xx=xx+xbin/2. & yy=yy+ybin/2.
-   contour,hist,xx,yy,/overplot,fill=fillyn,levels=levels,c_color=clrz,background=bcolor,/downhill
+   contour,hist,xx,yy,/overplot,fill=fillyn,levels=levels,$
+           c_color=clrz,background=bcolor,/downhill
    if not keyword_set(no_line) then $
       contour,hist,xx,yy,/overplot,color=!p.background,levels=levels,/downhill
 endif
