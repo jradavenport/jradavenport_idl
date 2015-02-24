@@ -98,10 +98,12 @@
 ;           better, especially using with CUBEHELIX [JRAD]
 ;         - (Aug 2012) added background color to fix "holes"
 ;         - (Oct 2012) if MAX_DEN=1 set /NO_POINTS by default
+;         - put on GitHub, versions now kept there
 ;
 ;
 ; AUTHOR:  J.R.A. Davenport, University of Washington, April 2010
 ;	   jrad@astro.washington.edu
+;
 ;I would appreciate a simple acknowledgement for published works using my code:
 ;   "This publication has made use of code written by James R. A. Davenport."
 ;   
@@ -272,14 +274,14 @@ if not keyword_set(no_contour) and not keyword_set(no_fill) then begin
  ; if you do want the FILLED contours
    xx=xx+xbin/2. & yy=yy+ybin/2.
    contour,hist,xx,yy,/overplot,fill=fillyn,levels=levels,$
-           c_color=clrz,background=bcolor,/downhill
+           c_color=clrz,background=bcolor,_extra=e
    if not keyword_set(no_line) then $
-      contour,hist,xx,yy,/overplot,color=!p.background,levels=levels,/downhill
+      contour,hist,xx,yy,/overplot,color=!p.background,levels=levels,_extra=e
 endif
 if not keyword_set(no_contour) and keyword_set(no_fill) then begin
  ; if you do want the EMPTY contours
    xx=xx+xbin/2. & yy=yy+ybin/2.
-   contour,hist,xx,yy,/overplot,fill=fillyn,levels=levels,_extra = e,/downhill
+   contour,hist,xx,yy,/overplot,fill=fillyn,levels=levels,_extra=e
 endif
 
 if keyword_set(pixel) then begin ; pixels
