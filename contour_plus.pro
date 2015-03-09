@@ -5,10 +5,10 @@
 ;                   levels=,return_levels=,nlevels=,/no_fill,/no_contour,
 ;                   /no_line,/no_points,/pixel,/reverse,/all_points,/OVERPLOT]
 ;
-; PURPOSE: 
+; PURPOSE:
 ;       Create plots w/ filled contours over high density
 ;       regions. Removes data points under contours to reduce file
-;       size. 
+;       size.
 ;
 ;     * This is a total rewrite of CONTOUR_PLUS, having stolen the
 ;       idea from Anil Seth's 2005 version. This version uses
@@ -19,7 +19,7 @@
 ; INPUT: x,y
 ;	Vectors of values to plot
 ;
-; OPTIONAL INPUT: 
+; OPTIONAL INPUT:
 ;       LEVELS: an arry of levels to plot with contours. If not set,
 ;       CONTOUR_PLUS will use a default scheme.
 ;
@@ -28,11 +28,11 @@
 ;
 ;       XBIN/YBIN: bin size in the horizontal/vertical direction. If
 ;       not set, CONTOUR_PLUS will use 25 bins in each direction
-;       
+;
 ;       RETURN_LEVELS: user selected output vector which contains all
 ;       the levels CONTOUR_PLUS uses.
 ;           NOTES: a) this *could* already be accomplished by just
-;                     setting LEVELS= a new variable, but may be more 
+;                     setting LEVELS= a new variable, but may be more
 ;                     intuitive this way
 ;                  b) auto-selecting levels is very difficult to
 ;                     generalize for all types of data, this is a very
@@ -48,8 +48,8 @@
 ; KEYWORD INPUT:
 ;       /NO_FILL: use only lined contours, not filled contours
 ;
-;	/NO_CONTOUR: suppress the contours, only plot the points which
-;	fall below the maximum density
+;       /NO_CONTOUR: suppress the contours, only plot the points which
+;       fall below the maximum density
 ;
 ;       /NO_POINTS: suppress the points of data, contours only
 ;
@@ -57,18 +57,18 @@
 ;
 ;       /PIXEL: draw pixels at each bin instead of contours. Uses a
 ;       modified version of my PIXEL_CONTOUR script. /PIXEL works best
-;       if you do not set the LEVELS= 
+;       if you do not set the LEVELS=
 ;
 ;       /REVERSE: reverse the color table for the contours. This uses
 ;       REVERSE_CT by D Fanning (included)
 ;
-;       /ALL_POINTS: do not remove the data below the contours. 
+;       /ALL_POINTS: do not remove the data below the contours.
 ;       Defeats the purpose of this program, but ensures no gaps
 ;       between points and contours.
 ;
 ;       /OVERPLOT: put on top of existing plot. Very useful in
-;       combination with /NO_FILL and /NO_POINTS for overplotting 
-;       open contours. 
+;       combination with /NO_FILL and /NO_POINTS for overplotting
+;       open contours.
 ;
 ; COMMON ERRORS:
 ;	- Small gaps between the plotted data and contours can appear,
@@ -78,11 +78,11 @@
 ;
 ; VERSION:- (April 2010) Written from scratch [JRAD]
 ;         - (April 2010) problem noticed: if you contour a uniform
-;           field, it can crash when given levels... fixed w/ levels? 
+;           field, it can crash when given levels... fixed w/ levels?
 ;         - (May 2010) Centering of contours fixed, min # of levels
 ;           added, pixels colors "top-out" at 255 now, dont wrap to
 ;           back to 0 [JRAD]
-;	  - (Sept 2010) Add RETURN_LEVELS option for clarity, tweaked
+;         - (Sept 2010) Add RETURN_LEVELS option for clarity, tweaked
 ;           default contour levels [JRAD]
 ;         - (Feb 2011) Added TRIMLEVEL to control which which contour
 ;           is used to cut out data [JRAD]
@@ -106,12 +106,12 @@
 ;
 ;I would appreciate a simple acknowledgement for published works using my code:
 ;   "This publication has made use of code written by James R. A. Davenport."
-;   
+;
 ; PROCEDURES CALLED
 ;
-;       REVERSE_CT    [dfanning library] - included
-;	HIST_ND       [dfanning library] 
-;                     http://www.dfanning.com/programs/hist_nd.pro
+;    REVERSE_CT    [dfanning library] - included
+;    HIST_ND       [dfanning library]
+;    http://www.dfanning.com/programs/hist_nd.pro
 ;
 ;-
 
@@ -141,30 +141,30 @@ compile_opt defint32, strictarr, strictarrsubs
 compile_opt HIDDEN
 
   On_error,2
-  if N_params() LT 2 then begin   
-     print, 'Error: must provide X and Y coordinates.'
-     print,'contour_plus,x,y,max_den,xbin=xbin,ybin=ybin,levels=levels,no_fill=no_fill,no_contour=no_contour,no_line=no_line,no_points=no_points,pixel=pixel,reverse=reverse,psym=psym,all_points=all_points, _extra = e'
+  if N_params() LT 2 then begin
+     PRINT, 'Error: must provide X and Y coordinates.'
+     PRINT, 'contour_plus,x,y,max_den,xbin=xbin,ybin=ybin,levels=levels,no_fill=no_fill,no_contour=no_contour,no_line=no_line,no_points=no_points,pixel=pixel,reverse=reverse,psym=psym,all_points=all_points, _extra = e'
      return
   endif
 
 ; Use the X/Yrange to set limits of the histogram
-  ymin = min(y)                 ; 
+  ymin = min(y)                 ;
   ymax = max(y)                 ; set these incase no others
   xmin = min(x)                 ; are set by the user
-  xmax = max(x)                 ; 
+  xmax = max(x)                 ;
   if keyword_set(e) then begin
-     if total(tag_names(e) eq 'YRANGE') eq 1 then ymin=min(e.yrange)  
-     if total(tag_names(e) eq 'YRANGE') eq 1 then ymax=max(e.yrange)  
-     if total(tag_names(e) eq 'XRANGE') eq 1 then xmin=min(e.xrange)  
-     if total(tag_names(e) eq 'XRANGE') eq 1 then xmax=max(e.xrange)  
-  endif 
+     if total(tag_names(e) eq 'YRANGE') eq 1 then ymin=min(e.yrange)
+     if total(tag_names(e) eq 'YRANGE') eq 1 then ymax=max(e.yrange)
+     if total(tag_names(e) eq 'XRANGE') eq 1 then xmin=min(e.xrange)
+     if total(tag_names(e) eq 'XRANGE') eq 1 then xmax=max(e.xrange)
+  endif
 
 ; incase no x/ybin has been set, make 25 bins
   if not keyword_set(xbin) then xbin = (abs(xmax-xmin)/25.)
   if not keyword_set(ybin) then ybin = (abs(ymax-ymin)/25.)
-  
+
 ;;   if total(x ge xmin and x le xmax and y ge ymin and y le ymax) le 1 then begin
-;;      print,'ERROR: Not enough data within the specified X/Yrange. Please adjust your range and try again!'
+;;      PRINT, 'ERROR: Not enough data within the specified X/Yrange. Please adjust your range and try again!'
 ;;      return
 ;;   endif
 
@@ -175,14 +175,14 @@ compile_opt HIDDEN
 
 ; FIX error when no data is within range, quit gracefully
 if total(hist) eq 0 then begin
-   print,'ERROR: No data within specified X/Yrange!' 
-   print,'       Please adjust the X/Yrange and try again.'
+   PRINT, 'ERROR: No data within specified X/Yrange!'
+   PRINT, '       Please adjust the X/Yrange and try again.'
    return
 endif
 
 ; If a threshhold density is not set, then use the minimum of the
 ; levels if available, otherwise choose one based on the Std Dev.
-if (not keyword_set(max_den) and keyword_set(levels)) then max_den=min(levels) 
+if (not keyword_set(max_den) and keyword_set(levels)) then max_den=min(levels)
 if (not keyword_set(max_den) and not keyword_set(levels)) then $
    max_den = stddev(hist,/NAN)
 
@@ -197,9 +197,9 @@ if not keyword_set(nlevels) then nlevels=8
 if not keyword_set(levels) then $
    levels = lindgen(nlevels)^2.3*stddev(hist)/(nlevels*1.5)+max_den
 
-;make sure there's a couple levels 
+;make sure there's a couple levels
 if n_elements(levels) le 1 then begin
-   print,'Caution: Minimum level too low, adding 1.'
+   PRINT, 'Caution: Minimum level too low, adding 1.'
    levels = [levels,max(levels)+max_den,max(levels)+2.*max_den]
 endif
 
@@ -296,7 +296,7 @@ if keyword_set(pixel) then begin ; pixels
 ; ensure the colors dont wrap around, keep the "max" at 255
          if hist[l,n] ge max(levels) then $
             color = 255.-255./(n_elements(levels)+1)
-         
+
          if keyword_set(reverse) then color = color+255./(n_elements(levels)+1)
 
          polyfill,color=color[0],[xarr],[yarr],/fill ;,_extra = e
@@ -310,4 +310,3 @@ if keyword_set(reverse) then reverse_ct,/set
 
 return
 end
-
