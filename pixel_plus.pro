@@ -19,9 +19,14 @@
 ;	I = vector of intensities (variable to be computed over in each bin)
 ;
 ; OPTIONAL INPUTS:
-;	xsz = the x-coord bin size (default = 0.05)
-;	ysz = the y-coord bin size (default = 0.10)
+;	xbin = the x-coord bin size 
+;	ybin = the y-coord bin size 
 ;	nlvl = the number of contour levels (default = 10)
+;       lvl = the levels to plot at
+;       mode = to way to combine points within each bin. Default is
+;              "mean", can also accept "total" and "median"
+;       /overplot
+;       
 ;	binlimit = the largest allowed number of bins in any dimension
 ;		(default = 2000) 
 ;		NOTE: making this too large can cause a memory
