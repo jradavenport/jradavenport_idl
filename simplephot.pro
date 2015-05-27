@@ -117,7 +117,7 @@ pro resetcoords_man,img,ncomp,xx,yy
 
   loadct,5,/silent              ; STD GAMMA-II
   plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
-  tvimage,(im),position=[.1,.1,.95,.95]
+  tvimage,smooth(im,/edge_truncate,2),position=[.1,.1,.95,.95]
   print,'> select target'
   print,'> (green boxes indicate stars auto-found by FIND)'
   x1=1
@@ -279,7 +279,7 @@ if keyword_set(imagelist) then begin
    if not keyword_set(coord) or keyword_set(display) then begin
       window,0,xsize=750,ysize=750,title='SIMPLEPHOT'
       plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
-      tvimage,im,position=[.1,.1,.95,.95]
+      tvimage, smooth(im,/edge_truncate,2), position=[.1,.1,.95,.95]
       
       print,''
       print,n_elements(images),' images to process...'
@@ -296,7 +296,7 @@ if keyword_set(imagelist) then begin
    ;cubehelix
       loadct,5,/silent          ; STD GAMMA-II
       plot,[0],xrange=[0,imsz[1]],yrange=[0,imsz[2]],/xsty,/ysty,/nodata,position=[.1,.1,.95,.95],xtitle='X (pixel)',ytitle='Y (pixel)'
-      tvimage,im,position=[.1,.1,.95,.95]
+      tvimage,smooth(im,/edge_truncate,2),position=[.1,.1,.95,.95]
       print,''
       
       find,im,xtmp,ytmp,fluxf,sharpf,rndf, median(im)+stddev(im,/nan)*3., fwhm ,roundlim, sharplim,/monitor,/silent
@@ -370,7 +370,7 @@ if keyword_set(imagelist) then begin
               /nodata,position=[.1,.1,.95,.95],$
               xtitle='X (pixel)',ytitle='Y (pixel)',title=images[n]
          loadct,5,/silent       ; STD GAMMA-II
-         tvimage,im,position=[.1,.1,.95,.95]
+         tvimage,smooth(im,/edge_truncate,2),position=[.1,.1,.95,.95]
       endif
       
  ; find and phot
