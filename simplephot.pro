@@ -170,7 +170,8 @@ end
 pro simplephot,imagelist, display=display, ncomp=ncomp, reduce=reduce,$
                flatlist=flatlist, biaslist=biaslist, darklist=darklist,$
                doneflat=doneflat, donebias=donebias, donedark=donedark,$
-               coord=coord, gaussian=gaussian
+               coord=coord, gaussian=gaussian, $
+               smbox=smbox, fwhm=fwhm,aperture=aperture
 
 print,'STARTING SIMPLEPHOT'
 print,'.. a time series photometry wrapper by James Davenport ..'
@@ -452,7 +453,7 @@ if keyword_set(imagelist) then begin
       
       fwhmout[n] = (atest[2]+atest[3])/2.
       
-      printf,1,f=tmparr+'D)',images[n],time,timeout[n], $
+      printf,1,f=tmparr+'D)',images[n]+' ', time+' ', timeout[n], $
              [transpose(outmag[n,*]),transpose(outerr[n,*])]
    endfor
    close,1
