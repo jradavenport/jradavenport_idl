@@ -385,13 +385,13 @@ if keyword_set(imagelist) then begin
          tmpcoord = [(xx[i]-gbox),(xx[i]+gbox),$
                      (yy[i]-gbox),(yy[i]+gbox)]
          if tmpcoord[0] lt 0 then tmpcoord[0] = 0
-         if tmpcoord[1] lt 0 then tmpcoord[1] = imsz[1]
+         if tmpcoord[1] lt 0 then tmpcoord[1] = imsz[1]-1
          if tmpcoord[2] lt 0 then tmpcoord[2] = 0
-         if tmpcoord[3] lt 0 then tmpcoord[3] = imsz[1]
+         if tmpcoord[3] lt 0 then tmpcoord[3] = imsz[1]-1
          if tmpcoord[0] ge imsz[1] then tmpcoord[0] = 0
-         if tmpcoord[1] ge imsz[1] then tmpcoord[1] = imsz[1]
+         if tmpcoord[1] ge imsz[1] then tmpcoord[1] = imsz[1]-1
          if tmpcoord[2] ge imsz[1] then tmpcoord[2] = 0
-         if tmpcoord[3] ge imsz[1] then tmpcoord[3] = imsz[1]
+         if tmpcoord[3] ge imsz[1] then tmpcoord[3] = imsz[1]-1
          
          imtest = im[tmpcoord[0]:tmpcoord[1],tmpcoord[2]:tmpcoord[3]]
          gtest = GAUSS2DFIT(imtest,Atest, /tilt)
