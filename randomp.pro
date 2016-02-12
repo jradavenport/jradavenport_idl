@@ -19,7 +19,7 @@
 ;                    http://mathworld.wolfram.com/RandomNumber.html
 ;-
 
-function randomp,seed,n_rand,m,min=min,max=max
+function randomp, seed, n_rand, m, min=min, max=max
   compile_opt defint32, strictarr, strictarrsubs
   compile_opt HIDDEN
   On_error,2

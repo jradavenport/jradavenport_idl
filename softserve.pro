@@ -63,28 +63,37 @@ cut = 0.7; pick the good fit data, be strict!
 
 ok = where(abs(smooth(nn,2,/edge_truncate)) lt stddev(nn)*cut) 
 
-testout0 = testout
+if ok[0] ne -1 then begin
+   testout0 = testout
 
-;#2
-cut = 0.7
-bb = 35 * kk
-yflux = median(yy[ok],bb)
- testout = interpol(yflux[findgen(n_elements(ok)/bb)*bb],xx[ok[findgen(n_elements(ok)/bb)*bb]],xx,/spline)
+   ;#2
+   cut = 0.7
+   bb = 35 * kk
+   yflux = median(yy[ok],bb)
+   testout = interpol(yflux[findgen(n_elements(ok)/bb)*bb],$
+                      xx[ok[findgen(n_elements(ok)/bb)*bb]],xx,/spline)
 
-testout = smooth(testout,5,/edge_truncate)
-nn2 = (yy-testout);/median(yy)
-;plot,xx,nn2,psym=3,/xsty,yrange=[-.01,.01]
-ok2 = where(abs(smooth(nn2,2,/edge_truncate)) lt stddev(nn2)*cut) 
+   testout = smooth(testout,5,/edge_truncate)
+   nn2 = (yy-testout);/median(yy)
+   ;plot,xx,nn2,psym=3,/xsty,yrange=[-.01,.01]
+   ok2 = where(abs(smooth(nn2,2,/edge_truncate)) lt stddev(nn2)*cut) 
 
-testout1 = testout
+   testout1 = testout
 
-;#3
-bb = 25. * kk
-yflux = median(yy[ok2],bb)
- testout = interpol(yflux[findgen(n_elements(ok2)/bb)*bb],xx[ok2[findgen(n_elements(ok2)/bb)*bb]],xx,/lsqu)
+   ;#3
+   bb = 25. * kk
+   yflux = median(yy[ok2],bb)
+   testout = interpol(yflux[findgen(n_elements(ok2)/bb)*bb],xx[ok2[findgen(n_elements(ok2)/bb)*bb]],xx,/lsqu)
 
-testout = median(testout,5)
-nn3 = (yy-testout);/median(yy)
+   testout = median(testout,5)
+   nn3 = (yy-testout);/median(yy)
+endif else begin
+   print,'> softserve error: data didnt pass first threshold'
+   print,'    switching to a boxcar smooth with k=3'
+   print,'> note: softserve is end-of-life and will not be updated'
+
+   testout2 = smooth(yy, 3, /edge_truncate)
+endelse
 
 testout2 = testout
 
