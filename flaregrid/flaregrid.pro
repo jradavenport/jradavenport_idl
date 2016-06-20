@@ -15,7 +15,7 @@ function flaregrid,mag,filter=filter,sptype=sptype
 ;                   input mag's filter [u,g,r,i,z,J,H,K]
 ;                   DEFAULT = 0
 ;
-;          SpType = the stellar spectral type
+;          SpType = the stellar spectral type [0 to 6]
 ;                   DEFAULT = 0
 ;
 ; OUTPUTS:
@@ -26,7 +26,7 @@ function flaregrid,mag,filter=filter,sptype=sptype
 ;          array with dimensions = [N,8], simulating each flare
 ;
 ; EXAMPLE: Simulate a 2.5 mag g-band flare on an M4...
-;      IDL> print,flaregrid(2.5,s=4,f=1)
+;      IDL> print, flaregrid(2.5, s=4, f=1)
 ;            5.70135
 ;            2.50000
 ;            1.24874
@@ -41,17 +41,26 @@ function flaregrid,mag,filter=filter,sptype=sptype
 ;-
 
 
-  if not keyword_set(mag) then begin
+ if not keyword_set(mag) then begin
      print,'you must enter a mag'
-     return,-1
-  end
+     return, -1
+ endif
 ;'flaregrid = [sptype,band,coverage]'
 
 if not keyword_set(sptype) then sptype=0 ; default = M0
 if not keyword_set(filter) then filter=0 ; default = u band
 
+if (sptype gt 6) or (sptype lt 0) then begin
+    print,'error: SpType must be between 0 and 6'
+    return, -1
+endif
+
 ;==> this must be the absolute path to the flaregrid data
-restore,'/Users/james/IDL/jrad/flaregrid/flaregrid.sav'
+; restore,'/Users/james/IDL/jrad/flaregrid/flaregrid.sav'
+F_PATH = file_search(strsplit(!path,path_sep(/search),/extract),'flaregrid.pro')
+F_PATH = strmid(F_PATH,0,strpos(F_PATH,'flaregrid.pro'))
+F_PATH = F_PATH[0]
+restore, F_PATH + 'flaregrid.sav'
 
 ;new Y = INTERPOL(old Y, old X,new X)
 u = interpol(flaregrid[sptype,0,*],flaregrid[sptype,filter,*],mag,/spline)
