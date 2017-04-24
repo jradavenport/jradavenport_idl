@@ -1,8 +1,11 @@
 ;---------------
-;
+; +
 ;  Simple Exposure Time Calculator for Apache Point Observatory (APO) 3.5m telescope
 ;  NOTE: using very approximate values! Do not plan your observing run solely on this tool!
 ;
+; EXAMPLE USE:
+;    idl> apoexpcal, 'dis', 14.5, 10. 
+; -
 pro apoexpcal,inst,mag,s2n,filter
 
 if not keyword_set(inst) then begin
@@ -35,10 +38,10 @@ print,'SPICAM: '+filter+' filter, '+strtrim(string(mag),2)+' mag'
    spi_filter = ['u','g','r','i','z']
    spi_c = [21.38,24.92,24.93,24.72,23.43]
    spi_K = [.48,.19,.11,.04,.06]
-   
+
    n=where(spi_filter eq filter)
    spi_flux = 10d0^((mag-spi_c[n])/(-2.5))
-   
+
 ; this is the MOST simple case: S/N = sqrt(Counts)
    exptime = s2n^2./spi_flux
    print,'t = ',exptime,' sec'
