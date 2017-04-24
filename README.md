@@ -1,6 +1,8 @@
 # jradavenport_idl
 *General purpose IDL tools written by @jradavenport*
 
+[![DOI](https://zenodo.org/badge/18946854.svg)](https://zenodo.org/badge/latestdoi/18946854)
+
 This is a collection of routines that I have created to help make using IDL easier on a daily basis. These include astronomy, plotting, binning/smoothing, and general helper routines. Most have thorough documentation.  
 
 
